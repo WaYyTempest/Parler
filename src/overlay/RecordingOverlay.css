@@ -5,7 +5,7 @@
   align-items: center;
   gap: 6px;
   padding: 0 12px;
-  background: #1a1a1a;
+  background: #1e2030;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 17px;
   opacity: 0;
@@ -131,7 +131,7 @@
   width: 18px;
   height: 18px;
   border-radius: 4px;
-  background: rgba(100, 140, 255, 0.85);
+  background: rgba(198, 160, 246, 0.85);
   color: #fff;
   font-size: 11px;
   font-weight: 700;

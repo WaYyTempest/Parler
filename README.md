@@ -1,11 +1,7 @@
 # Parler
 
-> **This is a personal fork of [cjpais/Handy](https://github.com/cjpais/Handy)** by Melvyn.
-> It adds custom features on top of the original Handy app while keeping full compatibility with upstream.
-
-## Custom Additions
-
-- **Conditional model switching**: Automatically use a different (larger) model when audio recordings exceed a configurable duration threshold (default: 10 seconds). This lets you use a fast lightweight model for short recordings and a more accurate model for longer ones.
+> **This is a personal fork of [Melvynx/Parler](https://github.com/Melvynx/Parler)** by WaYy, which is itself a fork of the original [cjpais/Handy](https://github.com/cjpais/Handy).
+> It adds custom features and a redesigned UI on top of their work.
 
 ---
 
@@ -45,8 +41,7 @@ The process is entirely local:
 
 ### Installation
 
-1. Download the latest release from the [releases page](https://github.com/Melvynx/Parler/releases) or the [website](https://handy.computer)
-   - **macOS**: Also available via [Homebrew cask](https://formulae.brew.sh/cask/handy): `brew install --cask handy`
+1. Download the latest release from the [releases page](https://github.com/WaYyTempest/Parler/releases)
 2. Install the application
 3. Launch Parler and grant necessary system permissions (microphone, accessibility)
 4. Configure your preferred keyboard shortcuts in Settings
@@ -112,7 +107,7 @@ handy --start-hidden --no-tray
 
 ## Known Issues & Current Limitations
 
-This project is actively being developed and has some [known issues](https://github.com/Melvynx/Parler/issues). We believe in transparency about the current state:
+This project is actively being developed and has some [known issues](https://github.com/WaYyTempest/Parler/issues). We believe in transparency about the current state:
 
 ### Major Issues (Help Wanted)
 
@@ -376,7 +371,7 @@ Parler can auto-discover custom Whisper GGML models placed in the `models` direc
 
 ### How to Contribute
 
-1. **Check existing issues** at [github.com/Melvynx/Parler/issues](https://github.com/Melvynx/Parler/issues)
+1. **Check existing issues** at [github.com/WaYyTempest/Parler/issues](https://github.com/WaYyTempest/Parler/issues)
 2. **Fork the repository** and create a feature branch
 3. **Test thoroughly** on your target platform
 4. **Submit a pull request** with clear description of changes

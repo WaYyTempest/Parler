@@ -384,10 +384,6 @@ pub struct AppSettings {
     #[serde(default = "default_long_audio_threshold_seconds")]
     pub long_audio_threshold_seconds: f32,
     #[serde(default)]
-    pub gemini_api_key: Option<String>,
-    #[serde(default = "default_gemini_model")]
-    pub gemini_model: String,
-    #[serde(default)]
     pub post_process_actions: Vec<PostProcessAction>,
     #[serde(default)]
     pub saved_processing_models: Vec<SavedProcessingModel>,
@@ -550,15 +546,6 @@ fn default_post_process_providers() -> Vec<PostProcessProvider> {
         });
     }
 
-    providers.push(PostProcessProvider {
-        id: "gemini".to_string(),
-        label: "Gemini".to_string(),
-        base_url: "https://generativelanguage.googleapis.com/v1beta".to_string(),
-        allow_base_url_edit: false,
-        models_endpoint: None,
-        supports_structured_output: false,
-    });
-
     // Custom provider always comes last
     providers.push(PostProcessProvider {
         id: "custom".to_string(),
@@ -612,10 +599,6 @@ fn default_typing_tool() -> TypingTool {
 
 fn default_long_audio_threshold_seconds() -> f32 {
     10.0
-}
-
-fn default_gemini_model() -> String {
-    "gemini-2.5-flash".to_string()
 }
 
 fn ensure_post_process_defaults(settings: &mut AppSettings) -> bool {
@@ -774,8 +757,6 @@ pub fn get_default_settings() -> AppSettings {
         external_script_path: None,
         long_audio_model: None,
         long_audio_threshold_seconds: default_long_audio_threshold_seconds(),
-        gemini_api_key: None,
-        gemini_model: default_gemini_model(),
         post_process_actions: Vec::new(),
         saved_processing_models: Vec::new(),
     }

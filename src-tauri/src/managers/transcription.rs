@@ -42,7 +42,6 @@ enum LoadedEngine {
     Moonshine(MoonshineEngine),
     MoonshineStreaming(MoonshineStreamingEngine),
     SenseVoice(SenseVoiceEngine),
-    GeminiApi,
 }
 
 #[derive(Clone)]
@@ -166,7 +165,6 @@ impl TranscriptionManager {
                     LoadedEngine::Moonshine(ref mut e) => e.unload_model(),
                     LoadedEngine::MoonshineStreaming(ref mut e) => e.unload_model(),
                     LoadedEngine::SenseVoice(ref mut e) => e.unload_model(),
-                    LoadedEngine::GeminiApi => {}
                 }
             }
             *engine = None; // Drop the engine to free memory
@@ -242,11 +240,7 @@ impl TranscriptionManager {
             return Err(anyhow::anyhow!(error_msg));
         }
 
-        let model_path = if matches!(model_info.engine_type, EngineType::GeminiApi) {
-            std::path::PathBuf::new()
-        } else {
-            self.model_manager.get_model_path(model_id)?
-        };
+        let model_path = self.model_manager.get_model_path(model_id)?;
 
         // Create appropriate engine based on model type
         let loaded_engine = match model_info.engine_type {
@@ -352,28 +346,6 @@ impl TranscriptionManager {
                     })?;
                 LoadedEngine::SenseVoice(engine)
             }
-            EngineType::GeminiApi => {
-                let settings = get_settings(&self.app_handle);
-                if settings.gemini_api_key.is_none()
-                    || settings
-                        .gemini_api_key
-                        .as_ref()
-                        .map_or(true, |k| k.is_empty())
-                {
-                    let error_msg = "Gemini API key not configured";
-                    let _ = self.app_handle.emit(
-                        "model-state-changed",
-                        ModelStateEvent {
-                            event_type: "loading_failed".to_string(),
-                            model_id: Some(model_id.to_string()),
-                            model_name: Some(model_info.name.clone()),
-                            error: Some(error_msg.to_string()),
-                        },
-                    );
-                    return Err(anyhow::anyhow!(error_msg));
-                }
-                LoadedEngine::GeminiApi
-            }
         };
 
         // Update the current engine and model ID
@@ -468,49 +440,6 @@ impl TranscriptionManager {
         // Get current settings for configuration
         let settings = get_settings(&self.app_handle);
 
-        // Handle Gemini API separately (requires async HTTP call)
-        {
-            let engine_guard = self.lock_engine();
-            if let Some(LoadedEngine::GeminiApi) = engine_guard.as_ref() {
-                drop(engine_guard);
-                let api_key = settings
-                    .gemini_api_key
-                    .as_ref()
-                    .ok_or_else(|| anyhow::anyhow!("Gemini API key not configured"))?
-                    .clone();
-                let gemini_model = settings.gemini_model.clone();
-
-                // Use block_in_place to safely run async code from a tokio worker thread.
-                // Handle::block_on() panics if called directly from an async context,
-                // so block_in_place tells tokio to move its work off this thread first.
-                let result = tokio::task::block_in_place(|| {
-                    tokio::runtime::Handle::current().block_on(
-                        crate::gemini_client::transcribe_audio(&api_key, &gemini_model, &audio),
-                    )
-                })?;
-
-                let corrected = if !settings.custom_words.is_empty() {
-                    apply_custom_words(
-                        &result,
-                        &settings.custom_words,
-                        settings.word_correction_threshold,
-                    )
-                } else {
-                    result
-                };
-                let final_result = filter_transcription_output(&corrected);
-
-                let et = std::time::Instant::now();
-                info!(
-                    "Gemini transcription completed in {}ms",
-                    (et - st).as_millis()
-                );
-
-                self.maybe_unload_immediately("gemini transcription");
-                return Ok(final_result);
-            }
-        }
-
         // Perform transcription with the appropriate engine.
         // We use catch_unwind to prevent engine panics from poisoning the mutex,
         // which would make the app hang indefinitely on subsequent operations.
@@ -596,9 +525,6 @@ impl TranscriptionManager {
                                 .map_err(|e| {
                                     anyhow::anyhow!("SenseVoice transcription failed: {}", e)
                                 })
-                        }
-                        LoadedEngine::GeminiApi => {
-                            unreachable!("GeminiApi handled before catch_unwind")
                         }
                     }
                 },

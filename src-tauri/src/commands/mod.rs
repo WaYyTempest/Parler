@@ -1,5 +1,4 @@
 pub mod audio;
-pub mod gemini;
 pub mod history;
 pub mod models;
 pub mod transcription;
