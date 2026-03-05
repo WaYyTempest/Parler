@@ -451,10 +451,14 @@ pub fn run(cli_args: CliArgs) {
             // CLI --start-hidden flag overrides the setting
             let should_hide = settings.start_hidden || cli_args.start_hidden;
 
+            // Never hide on first launch (no models downloaded = onboarding needed)
+            let model_manager = app_handle.state::<Arc<ModelManager>>();
+            let has_models = model_manager.get_available_models().iter().any(|m| m.is_downloaded);
+
             // If start_hidden but tray is disabled, we must show the window
             // anyway. Without a tray icon, the dock is the only way back in.
             let tray_available = settings.show_tray_icon && !cli_args.no_tray;
-            if !should_hide || !tray_available {
+            if !should_hide || !tray_available || !has_models {
                 if let Some(main_window) = app_handle.get_webview_window("main") {
                     main_window.show().unwrap();
                     main_window.set_focus().unwrap();
