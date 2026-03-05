@@ -10,13 +10,13 @@
 }
 
 @theme {
-  --color-text: #0f0f0f;
-  --color-background: #fbfbfb;
-  --color-background-ui: #4a7fd4;
-  --color-logo-primary: #5b9bf5;
-  --color-logo-stroke: #1e3a5f;
-  --color-text-stroke: #f6f6f6;
-  --color-mid-gray: #808080;
+  --color-text: #cad3f5;
+  --color-background: #24273a;
+  --color-background-ui: #c6a0f6;
+  --color-logo-primary: #c6a0f6;
+  --color-logo-stroke: #b7bdf8;
+  --color-text-stroke: #1e2030;
+  --color-mid-gray: #6e738d;
 }
 
 :root {
@@ -55,11 +55,11 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Colors - Dark Theme */
-    --color-text: #fbfbfb;
-    --color-background: #2c2b29;
-    --color-logo-primary: #6aa3f7;
-    --color-logo-stroke: #b8d4fc;
+    /* Colors - Dark Theme (Catppuccin Macchiato) */
+    --color-text: #cad3f5;
+    --color-background: #24273a;
+    --color-logo-primary: #c6a0f6;
+    --color-logo-stroke: #b7bdf8;
   }
 }
 

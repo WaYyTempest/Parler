@@ -67,18 +67,30 @@ const PostProcessingActionsComponent: React.FC = () => {
         savedModelId = id;
       }
     }
-    setEditingAction({ key: action.key, name: action.name, prompt: action.prompt, savedModelId, isNew: false });
+    setEditingAction({
+      key: action.key,
+      name: action.name,
+      prompt: action.prompt,
+      savedModelId,
+      isNew: false,
+    });
   };
 
   const handleSave = async () => {
-    if (!editingAction || !editingAction.name.trim() || !editingAction.prompt.trim())
+    if (
+      !editingAction ||
+      !editingAction.name.trim() ||
+      !editingAction.prompt.trim()
+    )
       return;
 
     try {
       let model: string | null = null;
       let providerId: string | null = null;
       if (editingAction.savedModelId) {
-        const saved = savedModels.find((m) => m.id === editingAction.savedModelId);
+        const saved = savedModels.find(
+          (m) => m.id === editingAction.savedModelId,
+        );
         if (saved) {
           model = saved.model_id;
           providerId = saved.provider_id;
@@ -139,7 +151,7 @@ const PostProcessingActionsComponent: React.FC = () => {
                   className="flex items-center gap-3 p-2 rounded-md hover:bg-mid-gray/5 cursor-pointer group"
                   onClick={() => handleStartEdit(action)}
                 >
-                  <span className="flex items-center justify-center w-6 h-6 rounded bg-blue-500/15 text-blue-400 text-xs font-bold font-mono flex-shrink-0">
+                  <span className="flex items-center justify-center w-6 h-6 rounded bg-purple-500/15 text-purple-400 text-xs font-bold font-mono flex-shrink-0">
                     {action.key}
                   </span>
                   <span className="text-sm text-text flex-1 truncate">
@@ -147,7 +159,8 @@ const PostProcessingActionsComponent: React.FC = () => {
                     {action.provider_id && action.model && (
                       <span className="text-xs text-mid-gray/60 ml-2">
                         {savedModels.find(
-                          (m) => m.id === `${action.provider_id}:${action.model}`,
+                          (m) =>
+                            m.id === `${action.provider_id}:${action.model}`,
                         )?.label || action.model}
                       </span>
                     )}
@@ -181,7 +194,7 @@ const PostProcessingActionsComponent: React.FC = () => {
                 <label className="text-sm font-semibold">
                   {t("settings.postProcessing.actions.key")}
                 </label>
-                <div className="flex items-center justify-center w-8 h-8 rounded bg-blue-500/15 text-blue-400 text-sm font-bold font-mono">
+                <div className="flex items-center justify-center w-8 h-8 rounded bg-purple-500/15 text-purple-400 text-sm font-bold font-mono">
                   {editingAction.key}
                 </div>
               </div>
@@ -278,11 +291,7 @@ const PostProcessingActionsComponent: React.FC = () => {
         )}
 
         {!editingAction && actions.length < 9 && (
-          <Button
-            onClick={handleStartCreate}
-            variant="primary"
-            size="md"
-          >
+          <Button onClick={handleStartCreate} variant="primary" size="md">
             {t("settings.postProcessing.actions.addAction")}
           </Button>
         )}
@@ -297,9 +306,7 @@ const PostProcessingActionsComponent: React.FC = () => {
   );
 };
 
-export const PostProcessingActions = React.memo(
-  PostProcessingActionsComponent,
-);
+export const PostProcessingActions = React.memo(PostProcessingActionsComponent);
 PostProcessingActions.displayName = "PostProcessingActions";
 
 export const PostProcessingSettings: React.FC = () => {

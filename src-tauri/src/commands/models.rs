@@ -1,4 +1,4 @@
-use crate::managers::model::{EngineType, ModelInfo, ModelManager};
+use crate::managers::model::{ModelInfo, ModelManager};
 use crate::managers::transcription::TranscriptionManager;
 use crate::settings::{get_settings, write_settings};
 use std::sync::Arc;
@@ -119,9 +119,7 @@ pub async fn has_any_models_available(
     model_manager: State<'_, Arc<ModelManager>>,
 ) -> Result<bool, String> {
     let models = model_manager.get_available_models();
-    Ok(models
-        .iter()
-        .any(|m| m.is_downloaded && !matches!(m.engine_type, EngineType::GeminiApi)))
+    Ok(models.iter().any(|m| m.is_downloaded))
 }
 
 #[tauri::command]
@@ -130,9 +128,9 @@ pub async fn has_any_models_or_downloads(
     model_manager: State<'_, Arc<ModelManager>>,
 ) -> Result<bool, String> {
     let models = model_manager.get_available_models();
-    Ok(models.iter().any(|m| {
-        !matches!(m.engine_type, EngineType::GeminiApi) && (m.is_downloaded || m.is_downloading)
-    }))
+    Ok(models
+        .iter()
+        .any(|m| m.is_downloaded || m.is_downloading))
 }
 
 #[tauri::command]
