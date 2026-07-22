@@ -1,23 +1,52 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { AudioPlayer } from "../../ui/AudioPlayer";
-import { Button } from "../../ui/Button";
-import {
-  Copy,
-  Star,
-  Check,
-  Trash2,
-  FolderOpen,
-  RefreshCw,
-  Loader2,
-} from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 import { readFile } from "@tauri-apps/plugin-fs";
-import { commands, type HistoryEntry } from "@/bindings";
-import { formatDateTime } from "@/utils/dateFormat";
+import {
+  Check,
+  Copy,
+  FolderOpen,
+  Loader2,
+  RefreshCw,
+  RotateCcw,
+  Star,
+  Trash2,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import {
+  commands,
+  events,
+  type HistoryEntry,
+  type HistoryUpdatePayload,
+} from "@/bindings";
 import { useOsType } from "@/hooks/useOsType";
 import { useModelStore } from "@/stores/modelStore";
+import { formatDateTime } from "@/utils/dateFormat";
+import { AudioPlayer, AudioPlayerGroup } from "../../ui/AudioPlayer";
+import { Button } from "../../ui/Button";
+
+const IconButton: React.FC<{
+  onClick: () => void;
+  title: string;
+  disabled?: boolean;
+  active?: boolean;
+  children: React.ReactNode;
+}> = ({ onClick, title, disabled, active, children }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`p-1.5 rounded-md flex items-center justify-center transition-colors cursor-pointer disabled:cursor-not-allowed disabled:text-text/20 ${
+      active
+        ? "text-logo-primary hover:text-logo-primary/80"
+        : "text-text/50 hover:text-logo-primary"
+    }`}
+    title={title}
+  >
+    {children}
+  </button>
+);
+
+const PAGE_SIZE = 30;
 
 interface OpenRecordingsButtonProps {
   onClick: () => void;
@@ -43,53 +72,113 @@ const OpenRecordingsButton: React.FC<OpenRecordingsButtonProps> = ({
 export const HistorySettings: React.FC = () => {
   const { t } = useTranslation();
   const osType = useOsType();
-  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
+  const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const entriesRef = useRef<HistoryEntry[]>([]);
+  const loadingRef = useRef(false);
 
-  const loadHistoryEntries = useCallback(async () => {
+  // Keep ref in sync for use in IntersectionObserver callback
+  useEffect(() => {
+    entriesRef.current = entries;
+  }, [entries]);
+
+  const loadPage = useCallback(async (cursor?: number) => {
+    const isFirstPage = cursor === undefined;
+    if (!isFirstPage && loadingRef.current) return;
+    loadingRef.current = true;
+
+    if (isFirstPage) setLoading(true);
+
     try {
-      const result = await commands.getHistoryEntries();
+      const result = await commands.getHistoryEntries(
+        cursor ?? null,
+        PAGE_SIZE,
+      );
       if (result.status === "ok") {
-        setHistoryEntries(result.data);
+        const { entries: newEntries, has_more } = result.data;
+        setEntries((prev) =>
+          isFirstPage ? newEntries : [...prev, ...newEntries],
+        );
+        setHasMore(has_more);
       }
     } catch (error) {
       console.error("Failed to load history entries:", error);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   }, []);
 
+  // Initial load
   useEffect(() => {
-    loadHistoryEntries();
+    loadPage();
+  }, [loadPage]);
 
-    // Listen for history update events
-    const setupListener = async () => {
-      const unlisten = await listen("history-updated", () => {
-        console.log("History updated, reloading entries...");
-        loadHistoryEntries();
-      });
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    if (loading) return;
 
-      // Return cleanup function
-      return unlisten;
-    };
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) return;
 
-    let unlistenPromise = setupListener();
+    const observer = new IntersectionObserver(
+      (observerEntries) => {
+        const first = observerEntries[0];
+        if (first.isIntersecting) {
+          const lastEntry = entriesRef.current[entriesRef.current.length - 1];
+          if (lastEntry) {
+            loadPage(lastEntry.id);
+          }
+        }
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loading, hasMore, loadPage]);
+
+  // Listen for new entries added from the transcription pipeline
+  useEffect(() => {
+    const unlisten = events.historyUpdatePayload.listen((event) => {
+      const payload: HistoryUpdatePayload = event.payload;
+      if (payload.action === "added") {
+        setEntries((prev) => [payload.entry, ...prev]);
+      } else if (payload.action === "updated") {
+        setEntries((prev) =>
+          prev.map((e) => (e.id === payload.entry.id ? payload.entry : e)),
+        );
+      }
+      // "deleted" and "toggled" are handled by optimistic updates only,
+      // so we intentionally ignore them here to avoid double-mutation.
+    });
 
     return () => {
-      unlistenPromise.then((unlisten) => {
-        if (unlisten) {
-          unlisten();
-        }
-      });
+      unlisten.then((fn) => fn());
     };
-  }, [loadHistoryEntries]);
+  }, []);
 
   const toggleSaved = async (id: number) => {
+    // Optimistic update
+    setEntries((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, saved: !e.saved } : e)),
+    );
     try {
-      await commands.toggleHistoryEntrySaved(id);
-      // No need to reload here - the event listener will handle it
+      const result = await commands.toggleHistoryEntrySaved(id);
+      if (result.status !== "ok") {
+        // Revert on failure
+        setEntries((prev) =>
+          prev.map((e) => (e.id === id ? { ...e, saved: !e.saved } : e)),
+        );
+      }
     } catch (error) {
       console.error("Failed to toggle saved status:", error);
+      // Revert on failure
+      setEntries((prev) =>
+        prev.map((e) => (e.id === id ? { ...e, saved: !e.saved } : e)),
+      );
     }
   };
 
@@ -109,10 +198,8 @@ export const HistorySettings: React.FC = () => {
           if (osType === "linux") {
             const fileData = await readFile(result.data);
             const blob = new Blob([fileData], { type: "audio/wav" });
-
             return URL.createObjectURL(blob);
           }
-
           return convertFileSrc(result.data, "asset");
         }
         return null;
@@ -125,69 +212,77 @@ export const HistorySettings: React.FC = () => {
   );
 
   const deleteAudioEntry = async (id: number) => {
+    // Optimistically remove
+    setEntries((prev) => prev.filter((e) => e.id !== id));
     try {
-      await commands.deleteHistoryEntry(id);
+      const result = await commands.deleteHistoryEntry(id);
+      if (result.status !== "ok") {
+        // Reload on failure
+        loadPage();
+      }
     } catch (error) {
-      console.error("Failed to delete audio entry:", error);
-      throw error;
+      console.error("Failed to delete entry:", error);
+      loadPage();
+    }
+  };
+
+  const retryHistoryEntry = async (id: number) => {
+    const result = await commands.retryHistoryEntryTranscription(id);
+    if (result.status !== "ok") {
+      throw new Error(String(result.error));
     }
   };
 
   const openRecordingsFolder = async () => {
     try {
-      await commands.openRecordingsFolder();
+      const result = await commands.openRecordingsFolder();
+      if (result.status !== "ok") {
+        throw new Error(String(result.error));
+      }
     } catch (error) {
       console.error("Failed to open recordings folder:", error);
     }
   };
 
+  let content: React.ReactNode;
+
   if (loading) {
-    return (
-      <div className="max-w-3xl w-full mx-auto space-y-6">
-        <div className="space-y-2">
-          <div className="px-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-xs font-medium text-mid-gray uppercase tracking-wide">
-                {t("settings.history.title")}
-              </h2>
-            </div>
-            <OpenRecordingsButton
-              onClick={openRecordingsFolder}
-              label={t("settings.history.openFolder")}
-            />
-          </div>
-          <div className="bg-background border border-mid-gray/20 rounded-lg overflow-visible">
-            <div className="px-4 py-3 text-center text-text/60">
-              {t("settings.history.loading")}
-            </div>
-          </div>
-        </div>
+    content = (
+      <div className="px-4 py-3 text-center text-text/60">
+        {t("settings.history.loading")}
       </div>
     );
-  }
-
-  if (historyEntries.length === 0) {
-    return (
-      <div className="max-w-3xl w-full mx-auto space-y-6">
-        <div className="space-y-2">
-          <div className="px-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-xs font-medium text-mid-gray uppercase tracking-wide">
-                {t("settings.history.title")}
-              </h2>
-            </div>
-            <OpenRecordingsButton
-              onClick={openRecordingsFolder}
-              label={t("settings.history.openFolder")}
-            />
-          </div>
-          <div className="bg-background border border-mid-gray/20 rounded-lg overflow-visible">
-            <div className="px-4 py-3 text-center text-text/60">
-              {t("settings.history.empty")}
-            </div>
-          </div>
-        </div>
+  } else if (entries.length === 0) {
+    content = (
+      <div className="px-4 py-3 text-center text-text/60">
+        {t("settings.history.empty")}
       </div>
+    );
+  } else {
+    content = (
+      <>
+        <AudioPlayerGroup>
+          <div className="divide-y divide-mid-gray/20">
+            {entries.map((entry) => (
+              <HistoryEntryComponent
+                key={entry.id}
+                entry={entry}
+                onToggleSaved={() => toggleSaved(entry.id)}
+                onCopyText={() =>
+                  copyToClipboard(
+                    entry.post_processed_text ?? entry.transcription_text,
+                  )
+                }
+                getAudioUrl={getAudioUrl}
+                deleteAudio={deleteAudioEntry}
+                retryTranscription={retryHistoryEntry}
+              />
+            ))}
+          </div>
+        </AudioPlayerGroup>
+        {/* Sentinel for infinite scroll */}
+        <div ref={sentinelRef} className="h-1" />
+      </>
     );
   }
 
@@ -206,22 +301,7 @@ export const HistorySettings: React.FC = () => {
           />
         </div>
         <div className="bg-background border border-mid-gray/20 rounded-lg overflow-visible">
-          <div className="divide-y divide-mid-gray/20">
-            {historyEntries.map((entry) => (
-              <HistoryEntryComponent
-                key={entry.id}
-                entry={entry}
-                onToggleSaved={() => toggleSaved(entry.id)}
-                onCopyText={() =>
-                  copyToClipboard(
-                    entry.post_processed_text ?? entry.transcription_text,
-                  )
-                }
-                getAudioUrl={getAudioUrl}
-                deleteAudio={deleteAudioEntry}
-              />
-            ))}
-          </div>
+          {content}
         </div>
       </div>
     </div>
@@ -234,6 +314,7 @@ interface HistoryEntryProps {
   onCopyText: () => void;
   getAudioUrl: (fileName: string) => Promise<string | null>;
   deleteAudio: (id: number) => Promise<void>;
+  retryTranscription: (id: number) => Promise<void>;
 }
 
 const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
@@ -242,6 +323,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   onCopyText,
   getAudioUrl,
   deleteAudio,
+  retryTranscription,
 }) => {
   const { t, i18n } = useTranslation();
   const [showCopied, setShowCopied] = useState(false);
@@ -251,6 +333,10 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   const models = useModelStore((s) => s.models);
 
   const downloadedModels = models.filter((m) => m.is_downloaded);
+  const [retrying, setRetrying] = useState(false);
+
+  const displayedText = entry.post_processed_text ?? entry.transcription_text;
+  const hasTranscription = displayedText.trim().length > 0;
 
   const handleLoadAudio = useCallback(
     () => getAudioUrl(entry.file_name),
@@ -258,6 +344,10 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   );
 
   const handleCopyText = () => {
+    if (!hasTranscription) {
+      return;
+    }
+
     onCopyText();
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 2000);
@@ -268,7 +358,19 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
       await deleteAudio(entry.id);
     } catch (error) {
       console.error("Failed to delete entry:", error);
-      alert("Failed to delete entry. Please try again.");
+      toast.error(t("settings.history.deleteError"));
+    }
+  };
+
+  const handleRetranscribe = async () => {
+    try {
+      setRetrying(true);
+      await retryTranscription(entry.id);
+    } catch (error) {
+      console.error("Failed to re-transcribe:", error);
+      toast.error(t("settings.history.retranscribeError"));
+    } finally {
+      setRetrying(false);
     }
   };
 
@@ -303,12 +405,11 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
         <p className="text-sm font-medium">{formattedDate}</p>
         <div className="flex items-center gap-1">
           <div className="relative" ref={pickerRef}>
-            <button
+            <IconButton
               onClick={() =>
                 !reprocessing && setShowModelPicker(!showModelPicker)
               }
-              disabled={reprocessing}
-              className="p-2 rounded-md text-text/50 hover:text-logo-primary transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={reprocessing || retrying}
               title={
                 reprocessing
                   ? t("settings.history.reprocessing")
@@ -320,7 +421,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
               ) : (
                 <RefreshCw width={16} height={16} />
               )}
-            </button>
+            </IconButton>
             {showModelPicker && downloadedModels.length > 0 && (
               <div className="absolute right-0 top-full mt-1 z-50 bg-background border border-mid-gray/20 rounded-lg shadow-lg py-1 min-w-[200px]">
                 <p className="px-3 py-1 text-xs text-text/50 font-medium">
@@ -338,9 +439,9 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
               </div>
             )}
           </div>
-          <button
+          <IconButton
             onClick={handleCopyText}
-            className="text-text/50 hover:text-logo-primary  hover:border-logo-primary transition-colors cursor-pointer"
+            disabled={!hasTranscription || retrying || reprocessing}
             title={t("settings.history.copyToClipboard")}
           >
             {showCopied ? (
@@ -348,14 +449,11 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
             ) : (
               <Copy width={16} height={16} />
             )}
-          </button>
-          <button
+          </IconButton>
+          <IconButton
             onClick={onToggleSaved}
-            className={`p-2 rounded-md transition-colors cursor-pointer ${
-              entry.saved
-                ? "text-logo-primary hover:text-logo-primary/80"
-                : "text-text/50 hover:text-logo-primary"
-            }`}
+            disabled={retrying || reprocessing}
+            active={entry.saved}
             title={
               entry.saved
                 ? t("settings.history.unsave")
@@ -367,17 +465,45 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
               height={16}
               fill={entry.saved ? "currentColor" : "none"}
             />
-          </button>
-          <button
+          </IconButton>
+          <IconButton
+            onClick={handleRetranscribe}
+            disabled={retrying || reprocessing}
+            title={t("settings.history.retranscribe")}
+          >
+            <RotateCcw
+              width={16}
+              height={16}
+              style={
+                retrying
+                  ? { animation: "spin 1s linear infinite reverse" }
+                  : undefined
+              }
+            />
+          </IconButton>
+          <IconButton
             onClick={handleDeleteEntry}
-            className="text-text/50 hover:text-logo-primary transition-colors cursor-pointer"
+            disabled={retrying || reprocessing}
             title={t("settings.history.delete")}
           >
             <Trash2 width={16} height={16} />
-          </button>
+          </IconButton>
         </div>
       </div>
-      {entry.post_processed_text ? (
+      {retrying ? (
+        <p
+          className="italic text-sm pb-2"
+          style={{ animation: "transcribe-pulse 3s ease-in-out infinite" }}
+        >
+          <style>{`
+            @keyframes transcribe-pulse {
+              0%, 100% { color: color-mix(in srgb, var(--color-text) 40%, transparent); }
+              50% { color: color-mix(in srgb, var(--color-text) 90%, transparent); }
+            }
+          `}</style>
+          {t("settings.history.transcribing")}
+        </p>
+      ) : entry.post_processed_text ? (
         <div className="space-y-2 pb-2">
           <div>
             <div className="flex items-center gap-2 mb-0.5">
@@ -392,7 +518,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
                 </span>
               )}
             </div>
-            <p className="italic text-text/90 text-sm select-text cursor-text">
+            <p className="italic text-text/90 text-sm select-text cursor-text whitespace-pre-wrap break-words">
               {entry.post_processed_text}
             </p>
           </div>
@@ -400,14 +526,22 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
             <span className="text-xs font-medium text-text/50 mb-0.5 block">
               {t("settings.history.originalTranscript")}
             </span>
-            <p className="italic text-text/50 text-sm select-text cursor-text">
+            <p className="italic text-text/50 text-sm select-text cursor-text whitespace-pre-wrap break-words">
               {entry.transcription_text}
             </p>
           </div>
         </div>
       ) : (
-        <p className="italic text-text/90 text-sm pb-2 select-text cursor-text">
-          {entry.transcription_text}
+        <p
+          className={`italic text-sm pb-2 ${
+            hasTranscription
+              ? "text-text/90 select-text cursor-text whitespace-pre-wrap break-words"
+              : "text-text/40"
+          }`}
+        >
+          {hasTranscription
+            ? entry.transcription_text
+            : t("settings.history.transcriptionFailed")}
         </p>
       )}
       <AudioPlayer onLoadRequest={handleLoadAudio} className="w-full" />

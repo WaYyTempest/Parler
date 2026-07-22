@@ -51,6 +51,14 @@ The process is entirely local:
 
 For detailed build instructions including platform-specific requirements, see [BUILD.md](BUILD.md).
 
+## Integrations
+
+<a href="https://www.raycast.com/mattiacolombomc/handy" title="Install Handy Raycast Extension"><img src="https://www.raycast.com/mattiacolombomc/handy/install_button@2x.png?v=1.1" height="64" style="height: 64px;" alt="Install handy Raycast Extension" /></a>
+
+Control Handy from [Raycast](https://www.raycast.com) — start/stop recording, browse transcript history, manage dictionary, switch models and languages.
+
+[Source](https://github.com/mattiacolombomc/raycast-handy) · by [@mattiacolombomc](https://github.com/mattiacolombomc)
+
 ## Architecture
 
 Parler is built as a Tauri application combining:
@@ -58,8 +66,8 @@ Parler is built as a Tauri application combining:
 - **Frontend**: React + TypeScript with Tailwind CSS for the settings UI
 - **Backend**: Rust for system integration, audio processing, and ML inference
 - **Core Libraries**:
-  - `whisper-rs`: Local speech recognition with Whisper models
-  - `transcription-rs`: CPU-optimized speech recognition with Parakeet models
+  - `transcribe-cpp`: Local speech recognition with Whisper-family models (GGML/GGUF)
+  - `transcribe-rs`: CPU-optimized speech recognition with Parakeet models
   - `cpal`: Cross-platform audio I/O
   - `vad-rs`: Voice Activity Detection
   - `rdev`: Global keyboard shortcuts and system events
@@ -79,30 +87,30 @@ Parler supports command-line flags for controlling a running instance and custom
 **Remote control flags** (sent to an already-running instance via the single-instance plugin):
 
 ```bash
-handy --toggle-transcription    # Toggle recording on/off
-handy --toggle-post-process     # Toggle recording with post-processing on/off
-handy --cancel                  # Cancel the current operation
+parler --toggle-transcription    # Toggle recording on/off
+parler --toggle-post-process     # Toggle recording with post-processing on/off
+parler --cancel                  # Cancel the current operation
 ```
 
 **Startup flags:**
 
 ```bash
-handy --start-hidden            # Start without showing the main window
-handy --no-tray                 # Start without the system tray icon
-handy --debug                   # Enable debug mode with verbose logging
-handy --help                    # Show all available flags
+parler --start-hidden            # Start without showing the main window
+parler --no-tray                 # Start without the system tray icon
+parler --debug                   # Enable debug mode with verbose logging
+parler --help                    # Show all available flags
 ```
 
 Flags can be combined for autostart scenarios:
 
 ```bash
-handy --start-hidden --no-tray
+parler --start-hidden --no-tray
 ```
 
 > **macOS tip:** When Parler is installed as an app bundle, invoke the binary directly:
 >
 > ```bash
-> /Applications/Parler.app/Contents/MacOS/Parler --toggle-transcription
+> /Applications/Parler.app/Contents/MacOS/parler --toggle-transcription
 > ```
 
 ## Known Issues & Current Limitations
@@ -155,13 +163,14 @@ Without these tools, Parler falls back to enigo which may have limited compatibi
 
 - The recording overlay is disabled by default on Linux (`Overlay Position: None`) because certain compositors treat it as the active window. When the overlay is visible it can steal focus, which prevents Parler from pasting back into the application that triggered transcription. If you enable the overlay anyway, be aware that clipboard-based pasting might fail or end up in the wrong window.
 - If you are having trouble with the app, running with the environment variable `WEBKIT_DISABLE_DMABUF_RENDERER=1` may help
+- If Parler fails to start reliably on Linux, see [Troubleshooting → Linux Startup Crashes or Instability](#linux-startup-crashes-or-instability).
 - **Global keyboard shortcuts (Wayland):** On Wayland, system-level shortcuts must be configured through your desktop environment or window manager. Use the [CLI flags](#cli-parameters) as the command for your custom shortcut.
 
   **GNOME:**
   1. Open **Settings > Keyboard > Keyboard Shortcuts > Custom Shortcuts**
   2. Click the **+** button to add a new shortcut
   3. Set the **Name** to `Toggle Parler Transcription`
-  4. Set the **Command** to `handy --toggle-transcription`
+  4. Set the **Command** to `parler --toggle-transcription`
   5. Click **Set Shortcut** and press your desired key combination (e.g., `Super+O`)
 
   **KDE Plasma:**
@@ -169,14 +178,14 @@ Without these tools, Parler falls back to enigo which may have limited compatibi
   2. Click **Edit > New > Global Shortcut > Command/URL**
   3. Name it `Toggle Parler Transcription`
   4. In the **Trigger** tab, set your desired key combination
-  5. In the **Action** tab, set the command to `handy --toggle-transcription`
+  5. In the **Action** tab, set the command to `parler --toggle-transcription`
 
   **Sway / i3:**
 
   Add to your config file (`~/.config/sway/config` or `~/.config/i3/config`):
 
   ```ini
-  bindsym $mod+o exec handy --toggle-transcription
+  bindsym $mod+o exec parler --toggle-transcription
   ```
 
   **Hyprland:**
@@ -184,24 +193,31 @@ Without these tools, Parler falls back to enigo which may have limited compatibi
   Add to your config file (`~/.config/hypr/hyprland.conf`):
 
   ```ini
-  bind = $mainMod, O, exec, handy --toggle-transcription
+  bind = $mainMod, O, exec, parler --toggle-transcription
   ```
 
 - You can also manage global shortcuts outside of Parler via Unix signals, which lets Wayland window managers or other hotkey daemons keep ownership of keybindings:
 
   | Signal    | Action                                    | Example                |
   | --------- | ----------------------------------------- | ---------------------- |
-  | `SIGUSR2` | Toggle transcription                      | `pkill -USR2 -n handy` |
-  | `SIGUSR1` | Toggle transcription with post-processing | `pkill -USR1 -n handy` |
+  | `SIGUSR2` | Toggle transcription                      | `pkill -USR2 -n parler` |
+  | `SIGUSR1` | Toggle transcription with post-processing | `pkill -USR1 -n parler` |
 
   Example Sway config:
 
   ```ini
-  bindsym $mod+o exec pkill -USR2 -n handy
-  bindsym $mod+p exec pkill -USR1 -n handy
+  bindsym $mod+o exec pkill -USR2 -n parler
+  bindsym $mod+p exec pkill -USR1 -n parler
   ```
 
   `pkill` here simply delivers the signal—it does not terminate the process.
+
+**Overlay & Pasting Issues (Linux):**
+
+- The recording overlay window can interfere with pasting transcribed text into target applications on Linux (X11)
+- **Solution:** Open **Settings > Advanced** and set **"Overlay Position"** to **"None"** to disable the overlay
+- Enable **"Audio Feedback"** (also in Advanced) if you still want audible confirmation of recording state
+- Users who upgrade from older versions or import settings from other platforms may need to manually apply this change
 
 ### Platform Support
 
@@ -257,6 +273,41 @@ We're actively working on several features and improvements. Contributions and f
 - Abstract and organize Tauri command patterns
 - Investigate tauri-specta for improved type safety and organization
 
+## Verify Release Signatures
+
+Parler release artifacts are signed with Tauri's updater signature format. The public key is stored in [`src-tauri/tauri.conf.json`](src-tauri/tauri.conf.json) under `plugins.updater.pubkey`.
+
+To verify a release manually, set `ARTIFACT` to the filename you downloaded, save the `pubkey` value from `src-tauri/tauri.conf.json` to `parler.pub.b64`, then decode the public key and matching `.sig` file from base64 and verify the artifact with `minisign`:
+
+```bash
+# Replace with the file you downloaded
+ARTIFACT="Parler_0.9.4_amd64.AppImage"
+
+python3 - "$ARTIFACT" <<'PY'
+import base64, pathlib, sys
+
+artifact = sys.argv[1]
+
+pub = pathlib.Path("parler.pub.b64").read_text().strip()
+pathlib.Path("parler.pub").write_bytes(base64.b64decode(pub))
+
+sig = pathlib.Path(f"{artifact}.sig").read_text().strip()
+pathlib.Path(f"{artifact}.minisig").write_bytes(base64.b64decode(sig))
+PY
+
+minisign -Vm "$ARTIFACT" \
+  -p parler.pub \
+  -x "$ARTIFACT.minisig"
+```
+
+On success, `minisign` prints:
+
+```text
+Signature and comment signature verified
+```
+
+Do not use `gpg` for these `.sig` files.
+
 ## Troubleshooting
 
 ### Manual Model Installation (For Proxy Users or Network Restrictions)
@@ -273,9 +324,9 @@ If you're behind a proxy, firewall, or in a restricted network environment where
 
 The typical paths are:
 
-- **macOS**: `~/Library/Application Support/com.pais.handy/`
-- **Windows**: `C:\Users\{username}\AppData\Roaming\com.pais.handy\`
-- **Linux**: `~/.config/com.pais.handy/`
+- **macOS**: `~/Library/Application Support/com.WaYyTempest.parler/`
+- **Windows**: `C:\Users\{username}\AppData\Roaming\com.WaYyTempest.parler\`
+- **Linux**: `~/.config/com.WaYyTempest.parler/`
 
 #### Step 2: Create Models Directory
 
@@ -283,10 +334,10 @@ Inside your app data directory, create a `models` folder if it doesn't already e
 
 ```bash
 # macOS/Linux
-mkdir -p ~/Library/Application\ Support/com.pais.handy/models
+mkdir -p ~/Library/Application\ Support/com.WaYyTempest.parler/models
 
 # Windows (PowerShell)
-New-Item -ItemType Directory -Force -Path "$env:APPDATA\com.pais.handy\models"
+New-Item -ItemType Directory -Force -Path "$env:APPDATA\com.WaYyTempest.parler\models"
 ```
 
 #### Step 3: Download Model Files
@@ -369,20 +420,62 @@ Parler can auto-discover custom Whisper GGML models placed in the `models` direc
 - The model must be a valid Whisper GGML format (`.bin` file)
 - Model name is derived from the filename (e.g., `my-custom-model.bin` → "My Custom Model")
 
+### Linux Startup Crashes or Instability
+
+If Parler fails to start reliably on Linux — for example, it crashes shortly after launch, never shows its window, or reports a Wayland protocol error — try the steps below in order.
+
+**1. Install (or reinstall) `gtk-layer-shell`**
+
+Parler uses `gtk-layer-shell` for its recording overlay and links against it at runtime. A missing or broken installation is the most common cause of startup failures and can manifest as a crash or a hang well before any window is shown. Make sure the runtime package is installed for your distro:
+
+| Distro        | Package to install    | Example command                        |
+| ------------- | --------------------- | -------------------------------------- |
+| Ubuntu/Debian | `libgtk-layer-shell0` | `sudo apt install libgtk-layer-shell0` |
+| Fedora/RHEL   | `gtk-layer-shell`     | `sudo dnf install gtk-layer-shell`     |
+| Arch Linux    | `gtk-layer-shell`     | `sudo pacman -S gtk-layer-shell`       |
+
+If it is already installed and you still see startup problems, try reinstalling it (e.g. `sudo pacman -S gtk-layer-shell` again) in case the library files were corrupted by a partial upgrade.
+
+**2. Disable the GTK layer shell overlay (`HANDY_NO_GTK_LAYER_SHELL`)**
+
+If installing the library does not help, you can skip `gtk-layer-shell` initialization entirely as a workaround. On some compositors (notably KDE Plasma under Wayland) it has been reported to interact poorly with the recording overlay. With this variable set, the overlay falls back to a regular always-on-top window:
+
+```bash
+HANDY_NO_GTK_LAYER_SHELL=1 parler
+```
+
+**3. Disable WebKit DMA-BUF renderer (`WEBKIT_DISABLE_DMABUF_RENDERER`)**
+
+On some GPU/driver combinations the WebKitGTK DMA-BUF renderer can cause the window to fail to render or to crash. Try:
+
+```bash
+WEBKIT_DISABLE_DMABUF_RENDERER=1 parler
+```
+
+**Making a workaround permanent**
+
+Once you've found a flag that helps, export it from your shell profile (`~/.bashrc`, `~/.zshenv`, …) or from the desktop autostart entry that launches Parler. If you launch Parler from a `.desktop` file, you can prefix the `Exec=` line, e.g.:
+
+```ini
+Exec=env HANDY_NO_GTK_LAYER_SHELL=1 parler
+```
+
+If a workaround helps you, please [open an issue](https://github.com/WaYyTempest/Parler/issues) describing your distro, desktop environment, and session type — that information helps us narrow down the underlying bug.
+
 ### How to Contribute
 
 1. **Check existing issues** at [github.com/WaYyTempest/Parler/issues](https://github.com/WaYyTempest/Parler/issues)
 2. **Fork the repository** and create a feature branch
 3. **Test thoroughly** on your target platform
 4. **Submit a pull request** with clear description of changes
-5. **Join the discussion** - reach out at [contact@handy.computer](mailto:contact@handy.computer)
+5. **Join the discussion** in the [Parler repository](https://github.com/WaYyTempest/Parler/discussions)
 
 The goal is to create both a useful tool and a foundation for others to build upon—a well-patterned, simple codebase that serves the community.
 
 ## Sponsors
 
 <div align="center">
-  We're grateful for the support of our sponsors who help make Parler possible:
+  We're grateful to the sponsors who support the original Handy project:
   <br><br>
   <a href="https://wordcab.com">
     <img src="sponsor-images/wordcab.png" alt="Wordcab" width="120" height="120">
@@ -399,17 +492,19 @@ The goal is to create both a useful tool and a foundation for others to build up
 
 ## Related Projects
 
-- **[Parler CLI](https://github.com/cjpais/handy-cli)** - The original Python command-line version
+- **[Handy CLI](https://github.com/cjpais/handy-cli)** - The original Python command-line version
 - **[handy.computer](https://handy.computer)** - Project website with demos and documentation
 
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
+The original Handy project is open-source software, but the Handy name, logo, icon, and brand assets are not open-source. Unofficial forks, rewrites, and redistributions must use their own branding and must not imply endorsement or affiliation.
+
 ## Acknowledgments
 
 - **Whisper** by OpenAI for the speech recognition model
-- **whisper.cpp and ggml** for amazing cross-platform whisper inference/acceleration
+- **ggml and transcribe.cpp** for amazing cross-platform speech-to-text inference/acceleration
 - **Silero** for great lightweight VAD
 - **Tauri** team for the excellent Rust-based app framework
 - **Community contributors** helping make Parler better

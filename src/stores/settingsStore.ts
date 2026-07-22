@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import type { AppSettings as Settings, AudioDevice } from "@/bindings";
+import { listen } from "@tauri-apps/api/event";
+import type {
+  AppSettings as Settings,
+  AudioDevice,
+  TranscribeAcceleratorSetting,
+  OrtAcceleratorSetting,
+} from "@/bindings";
 import { commands } from "@/bindings";
 
 interface SettingsStore {
@@ -82,6 +88,10 @@ const settingUpdaters: {
     commands.changeAutostartSetting(value as boolean),
   update_checks_enabled: (value) =>
     commands.changeUpdateChecksSetting(value as boolean),
+  show_whats_new_on_update: (value) =>
+    commands.changeShowWhatsNewOnUpdateSetting(value as boolean),
+  whats_new_last_seen_version: (value) =>
+    commands.changeWhatsNewLastSeenVersionSetting(value as string),
   push_to_talk: (value) => commands.changePttSetting(value as boolean),
   selected_microphone: (value) =>
     commands.setSelectedMicrophone(
@@ -111,6 +121,10 @@ const settingUpdaters: {
   custom_words: (value) => commands.updateCustomWords(value as string[]),
   word_correction_threshold: (value) =>
     commands.changeWordCorrectionThresholdSetting(value as number),
+  paste_delay_ms: (value) =>
+    commands.changePasteDelayMsSetting(value as number),
+  paste_delay_after_ms: (value) =>
+    commands.changePasteDelayAfterMsSetting(value as number),
   paste_method: (value) => commands.changePasteMethodSetting(value as string),
   typing_tool: (value) => commands.changeTypingToolSetting(value as string),
   external_script_path: (value) =>
@@ -131,14 +145,29 @@ const settingUpdaters: {
     commands.changeAppendTrailingSpaceSetting(value as boolean),
   log_level: (value) => commands.setLogLevel(value as any),
   app_language: (value) => commands.changeAppLanguageSetting(value as string),
+  theme: (value) => commands.changeThemeSetting(value as string),
   experimental_enabled: (value) =>
     commands.changeExperimentalEnabledSetting(value as boolean),
+  lazy_stream_close: (value) =>
+    commands.changeLazyStreamCloseSetting(value as boolean),
+  overlay_style: (value) => commands.changeOverlayStyleSetting(value as string),
+  vad_enabled: (value) => commands.changeVadEnabledSetting(value as boolean),
   show_tray_icon: (value) =>
     commands.changeShowTrayIconSetting(value as boolean),
   long_audio_model: (value) =>
     commands.changeLongAudioModelSetting((value as string | null) ?? null),
   long_audio_threshold_seconds: (value) =>
     commands.changeLongAudioThresholdSetting(value as number),
+  transcribe_accelerator: (value) =>
+    commands.changeTranscribeAcceleratorSetting(
+      value as TranscribeAcceleratorSetting,
+    ),
+  ort_accelerator: (value) =>
+    commands.changeOrtAcceleratorSetting(value as OrtAcceleratorSetting),
+  transcribe_gpu_device: (value) =>
+    commands.changeTranscribeGpuDevice(value as number),
+  extra_recording_buffer_ms: (value) =>
+    commands.changeExtraRecordingBufferSetting(value as number),
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -313,7 +342,7 @@ export const useSettingsStore = create<SettingsStore>()(
                 bindings: {
                   ...state.settings.bindings,
                   [id]: {
-                    ...state.settings.bindings[id]!,
+                    ...state.settings.bindings?.[id]!,
                     current_binding: binding,
                   },
                 },
@@ -344,7 +373,7 @@ export const useSettingsStore = create<SettingsStore>()(
                   bindings: {
                     ...state.settings.bindings,
                     [id]: {
-                      ...state.settings.bindings[id]!,
+                      ...state.settings.bindings?.[id]!,
                       current_binding: originalBinding,
                     },
                   },
@@ -569,6 +598,12 @@ export const useSettingsStore = create<SettingsStore>()(
         refreshSettings(),
         checkCustomSounds(),
       ]);
+
+      // Re-fetch settings when the backend changes them (e.g. language
+      // reset during model switch). The backend is the source of truth.
+      listen("model-state-changed", () => {
+        get().refreshSettings();
+      });
     },
   })),
 );

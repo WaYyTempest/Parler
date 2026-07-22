@@ -4,6 +4,7 @@
     "checkUpdates": "Nach Updates suchen...",
     "copyLastTranscript": "Letzte Transkription kopieren",
     "unloadModel": "Modell entladen",
+    "model": "Modell",
     "quit": "Beenden",
     "cancel": "Abbrechen"
   },
@@ -18,11 +19,12 @@
   },
   "onboarding": {
     "subtitle": "Wähle ein Transkriptionsmodell, um loszulegen",
+    "existingModelsTitle": "Kompatible Modelle",
+    "downloadModelsTitle": "Verfügbar zum Download",
+    "showAllModels": "Alle {{total}} Modelle anzeigen",
+    "showFewerModels": "Weniger Modelle anzeigen",
     "recommended": "Empfohlen",
-    "download": "Herunterladen",
-    "downloading": "Wird heruntergeladen...",
     "customModelDescription": "Nicht offiziell unterstützt",
-    "downloadFailed": "Download fehlgeschlagen. Bitte erneut versuchen.",
     "modelCard": {
       "accuracy": "Genauigkeit",
       "speed": "Geschwindigkeit"
@@ -75,22 +77,41 @@
       "sense-voice-int8": {
         "name": "SenseVoice",
         "description": "Sehr schnell. Chinesisch, Englisch, Japanisch, Koreanisch, Kantonesisch."
+      },
+      "gemini-api": {
+        "name": "Gemini API",
+        "description": "Cloud-based transcription via Google Gemini. Requires API key and internet."
+      },
+      "gigaam-v3-e2e-ctc": {
+        "name": "GigaAM v3",
+        "description": "Russische Spracherkennung. Schnell und präzise."
+      },
+      "canary-180m-flash": {
+        "name": "Canary 180M Flash",
+        "description": "Sehr schnell. Englisch, Deutsch, Spanisch, Französisch. Unterstützt Übersetzung."
+      },
+      "canary-1b-v2": {
+        "name": "Canary 1B v2",
+        "description": "Genaue mehrsprachige Erkennung. 25 europäische Sprachen. Unterstützt Übersetzung."
+      },
+      "cohere-int8": {
+        "name": "Cohere",
+        "description": "Ein großes, langsameres, aber sehr genaues mehrsprachiges Modell."
       }
     },
     "errors": {
-      "loadModels": "Verfügbare Modelle konnten nicht geladen werden",
-      "downloadModel": "Modell konnte nicht heruntergeladen werden: {{error}}"
+      "selectModel": "Modellauswahl fehlgeschlagen"
     },
     "permissions": {
       "title": "Berechtigungen erforderlich",
       "description": "Parler benötigt einige Berechtigungen, um richtig zu funktionieren.",
       "microphone": {
         "title": "Mikrofonzugriff",
-        "description": "Erforderlich, um Ihre Stimme für die Transkription zu hören."
+        "description": "Erforderlich, um deine Stimme für die Transkription zu hören."
       },
       "accessibility": {
         "title": "Bedienungshilfen-Zugriff",
-        "description": "Erforderlich, um transkribierten Text in Ihre Anwendungen einzugeben."
+        "description": "Erforderlich, um transkribierten Text in deine Anwendungen einzugeben."
       },
       "grant": "Berechtigung erteilen",
       "granted": "Erteilt",
@@ -105,9 +126,13 @@
   },
   "modelSelector": {
     "custom": "Benutzerdefiniert",
+    "legacy": "Veraltet",
+    "streaming": "Streaming",
     "active": "Aktiv",
     "switching": "Wechseln...",
     "noModelsAvailable": "Keine Modelle verfügbar",
+    "verifying": "Überprüfung von {{modelName}}...",
+    "verifyingGeneric": "Überprüfung...",
     "extracting": "Entpacke {{modelName}}...",
     "extractingMultiple": "Entpacke {{count}} Modelle...",
     "extractingGeneric": "Wird entpackt...",
@@ -121,39 +146,31 @@
     "noModelDownloadRequired": "Kein Modell - Download erforderlich",
     "deleteModel": "{{modelName}} löschen",
     "downloadSpeed": "{{speed}} MB/s",
+    "cancel": "Abbrechen",
+    "cancelDownload": "Download abbrechen",
     "capabilities": {
       "languageSelection": "Unterstützt mehrere Eingabesprachen",
-      "multiLanguage": "Mehrsprachig",
+      "singleLanguage": "Unterstützt nur diese Sprache",
+      "languageCount": "{{total}} Sprachen",
+      "languageOnly": "Nur {{language}}",
       "translation": "Kann ins Englische übersetzen",
       "translate": "Ins Englische übersetzen",
-      "singleLanguage": "Unterstützt nur diese Sprache",
-      "languageOnly": "Nur {{language}}"
-    },
-    "cancel": "Abbrechen",
-    "cancelDownload": "Download abbrechen"
+      "streaming": "Zeigt die Transkription live während des Sprechens an"
+    }
   },
   "settings": {
     "modelSettings": {
-      "title": "{{model}}-Einstellungen",
-      "noSettingsNeeded": "Dieses Modell funktioniert automatisch ohne Konfiguration."
+      "title": "{{model}}-Einstellungen"
     },
-    "models": {
-      "title": "Transkriptionsmodelle",
-      "description": "Wähle ein Transkriptionsmodell aus oder lade zusätzliche Modelle herunter. Verschiedene Modelle bieten unterschiedliche Genauigkeits- und Geschwindigkeitsstufen.",
-      "downloaded": "Heruntergeladen",
-      "available": "Zum Download verfügbar",
-      "deleteConfirm": "Bist du sicher, dass du {{modelName}} löschen möchtest? Du musst es erneut herunterladen, um es zu verwenden.",
-      "deleteActiveConfirm": "{{modelName}} ist dein aktives Modell. Das Löschen stoppt Transkriptionen, bis du ein neues Modell auswählst. Bist du sicher?",
-      "deleteTitle": "Modell löschen",
-      "filters": {
-        "all": "Alle",
-        "multiLanguage": "Mehrsprachig",
-        "translation": "Übersetzung",
-        "allLanguages": "Alle Sprachen"
-      },
-      "noModelsMatch": "Keine Modelle entsprechen diesem Filter.",
-      "yourModels": "Heruntergeladene Modelle",
-      "availableModels": "Zum Download verfügbar"
+    "longAudioModel": {
+      "title": "Long Audio Model",
+      "description": "Automatically switch to a different model when recording duration exceeds the threshold.",
+      "modelLabel": "Model for long recordings",
+      "modelDescription": "Select a model to use for recordings longer than the threshold.",
+      "thresholdLabel": "Duration threshold (seconds)",
+      "thresholdDescription": "Switch to the long audio model when recording exceeds this duration.",
+      "disabled": "Disabled",
+      "seconds": "{{value}}s"
     },
     "general": {
       "title": "Allgemein",
@@ -167,7 +184,7 @@
         "bindings": {
           "transcribe": {
             "name": "Transkriptions-Tastenkürzel",
-            "description": "Das Tastenkürzel zum Aufnehmen und Transkribieren Ihrer Stimme."
+            "description": "Das Tastenkürzel zum Aufnehmen und Transkribieren deiner Stimme."
           },
           "cancel": {
             "name": "Abbrechen-Tastenkürzel",
@@ -175,7 +192,7 @@
           },
           "transcribe_with_post_process": {
             "name": "Nachbearbeitungs-Tastenkürzel",
-            "description": "Optional: Ein dediziertes Tastenkürzel, das immer die KI-Nachbearbeitung auf Ihre Transkription anwendet."
+            "description": "Optional: Ein dediziertes Tastenkürzel, das immer die KI-Nachbearbeitung auf deine Transkription anwendet."
           }
         },
         "errors": {
@@ -187,7 +204,6 @@
       "language": {
         "title": "Sprache",
         "description": "Wähle die Sprache für die Spracherkennung. Auto erkennt die Sprache automatisch, die Auswahl einer bestimmten Sprache kann die Genauigkeit verbessern.",
-        "descriptionUnsupported": "Das Parakeet-Modell erkennt die Sprache automatisch. Keine manuelle Auswahl erforderlich.",
         "searchPlaceholder": "Sprachen suchen...",
         "noResults": "Keine Sprachen gefunden",
         "auto": "Auto"
@@ -195,6 +211,45 @@
       "pushToTalk": {
         "label": "Push-to-Talk",
         "description": "Gedrückt halten zum Aufnehmen, loslassen zum Stoppen"
+      }
+    },
+    "models": {
+      "title": "Transkriptionsmodelle",
+      "description": "Wähle ein Transkriptionsmodell aus oder lade zusätzliche Modelle herunter. Verschiedene Modelle bieten unterschiedliche Genauigkeits- und Geschwindigkeitsstufen.",
+      "tabs": {
+        "transcription": "Transcription",
+        "processing": "Processing"
+      },
+      "searchPlaceholder": "Modelle nach Namen suchen…",
+      "yourModels": "Heruntergeladene Modelle",
+      "availableModels": "Zum Download verfügbar",
+      "downloaded": "Heruntergeladen",
+      "available": "Zum Download verfügbar",
+      "deleteConfirm": "Bist du sicher, dass du {{modelName}} löschen möchtest? Du musst es erneut herunterladen, um es zu verwenden.",
+      "deleteActiveConfirm": "{{modelName}} ist dein aktives Modell. Das Löschen stoppt Transkriptionen, bis du ein neues Modell auswählst. Bist du sicher?",
+      "deleteTitle": "Modell löschen",
+      "filters": {
+        "allLanguages": "Alle Sprachen"
+      },
+      "noModelsMatch": "Keine Modelle entsprechen diesem Filter.",
+      "rescan": {
+        "label": "Neu scannen",
+        "tooltip": "Erneut nach Modellen scannen, die außerhalb von Parler zum Modellordner oder Hugging-Face-Cache hinzugefügt wurden"
+      },
+      "processingModels": {
+        "title": "Processing Models",
+        "description": "Save LLM models for use in post-processing actions.",
+        "noModels": "No processing models saved yet. Add one to use in your actions.",
+        "addModel": "Add Processing Model",
+        "provider": "Provider",
+        "apiKey": "API Key",
+        "apiKeyPlaceholder": "Enter API key",
+        "model": "Model",
+        "modelPlaceholder": "Select or type a model",
+        "save": "Save",
+        "cancel": "Cancel",
+        "fetchModels": "Fetch models",
+        "alreadySaved": "This model is already saved."
       }
     },
     "sound": {
@@ -221,17 +276,34 @@
       }
     },
     "advanced": {
-      "title": "Erweitert",
       "groups": {
         "app": "App",
         "output": "Ausgabe",
         "transcription": "Transkription",
         "history": "Verlauf",
-        "experimental": "Experimentell"
+        "experimental": "Experimentell",
+        "cloudModels": "Cloud Models"
       },
       "experimentalToggle": {
         "label": "Experimentelle Funktionen",
         "description": "Experimentelle Funktionen aktivieren, die sich noch in Entwicklung befinden."
+      },
+      "lazyStreamClose": {
+        "label": "Mikrofon zwischen Transkriptionen offen halten",
+        "description": "Hält den Mikrofon-Stream nach dem Aufnahmestopp 30 Sekunden lang offen, um die Latenz bei aufeinanderfolgenden Transkriptionen zu verringern. Kann die Bluetooth-Audioqualität beeinträchtigen."
+      },
+      "acceleration": {
+        "transcribe": {
+          "title": "Whisper-Beschleunigung",
+          "description": "Hardwarebeschleunigung für Whisper-Modelle. Automatisch nutzt GPU falls verfügbar (Metal auf macOS, Vulkan auf Windows/Linux)."
+        },
+        "ort": {
+          "title": "ONNX-Beschleunigung",
+          "description": "Hardwarebeschleunigung für ONNX-Modelle (Parakeet, Canary, Moonshine usw.). DirectML unter Windows ist experimentell. Modelle können bei der Transkription fehlschlagen."
+        },
+        "gpuDevice": {
+          "auto": "Auto"
+        }
       },
       "startHidden": {
         "label": "Versteckt starten",
@@ -246,12 +318,22 @@
         "description": "Das Parler-Symbol in der Taskleiste anzeigen."
       },
       "overlay": {
-        "title": "Overlay-Position",
-        "description": "Visuelles Feedback-Overlay während Aufnahme und Transkription anzeigen. Unter Linux wird 'Keine' empfohlen.",
-        "options": {
-          "none": "Keine",
-          "bottom": "Unten",
-          "top": "Oben"
+        "style": {
+          "title": "Overlay",
+          "description": "Wähle das Aufnahme-Overlay: „Keine“ blendet es aus, „Minimal“ zeigt ein kompaktes Element, „Live“ zeigt die Transkription in Echtzeit während des Sprechens an (nur für streamingfähige Modelle – suche nach dem Streaming-Badge in der Modellauswahl). Unter Linux wird „Keine“ empfohlen.",
+          "options": {
+            "none": "Keine",
+            "minimal": "Minimal",
+            "live": "Live"
+          }
+        },
+        "position": {
+          "title": "Overlay-Position",
+          "description": "Visuelles Feedback-Overlay während Aufnahme und Transkription anzeigen. Unter Linux wird 'Keine' empfohlen.",
+          "options": {
+            "bottom": "Unten",
+            "top": "Oben"
+          }
         }
       },
       "pasteMethod": {
@@ -269,7 +351,7 @@
       },
       "typingTool": {
         "title": "Eingabetool",
-        "description": "Wählen Sie, welches Linux-Eingabetool für die Direkt-Einfügen-Methode verwendet werden soll. Auto erkennt und verwendet automatisch das beste verfügbare Tool für Ihr System.",
+        "description": "Wähle, welches Linux-Eingabetool für die Direkt-Einfügen-Methode verwendet werden soll. Auto erkennt und verwendet automatisch das beste verfügbare Tool für dein System.",
         "options": {
           "auto": "Auto (Empfohlen)"
         }
@@ -295,8 +377,7 @@
       },
       "translateToEnglish": {
         "label": "Ins Englische übersetzen",
-        "description": "Sprache aus anderen Sprachen automatisch während der Transkription ins Englische übersetzen.",
-        "descriptionUnsupported": "Übersetzung wird vom {{model}}-Modell nicht unterstützt."
+        "description": "Sprache aus anderen Sprachen automatisch während der Transkription ins Englische übersetzen."
       },
       "modelUnload": {
         "title": "Modell entladen",
@@ -309,20 +390,23 @@
           "min10": "Nach 10 Minuten",
           "min15": "Nach 15 Minuten",
           "hour1": "Nach 1 Stunde",
-          "sec5": "Nach 5 Sekunden (Debug)"
+          "sec15": "Nach 15 Sekunden (Debug)"
         }
       },
       "customWords": {
         "title": "Benutzerdefinierte Wörter",
-        "description": "Wörter hinzufügen, die oft falsch gehört oder geschrieben werden. Das System korrigiert automatisch ähnlich klingende Wörter entsprechend deiner Liste.",
+        "description": "Hilf unterstützten Modellen, Namen und Fachbegriffe zu erkennen. Die unscharfe Korrektur ist derzeit auf Wörter mit den Buchstaben A–Z und Zahlen beschränkt.",
         "placeholder": "Wort hinzufügen",
         "add": "Hinzufügen",
         "remove": "{{word}} entfernen",
         "duplicate": "\"{{word}}\" existiert bereits"
+      },
+      "voiceActivityDetection": {
+        "title": "Sprachaktivitätserkennung (VAD)",
+        "description": "Filtert Stille aus Aufnahmen. Streamingfähige Modelle verwenden ein längeres VAD-Ende; das Deaktivieren von VAD nimmt Rohaudio auf."
       }
     },
     "postProcessing": {
-      "title": "Nachbearbeitung",
       "hotkey": {
         "title": "Tastenkürzel"
       },
@@ -333,9 +417,6 @@
           "description": "Wähle einen OpenAI-kompatiblen Anbieter."
         },
         "appleIntelligence": {
-          "title": "Apple Intelligence",
-          "description": "Läuft vollständig auf dem Gerät. Kein API-Schlüssel oder Netzwerkzugriff erforderlich.",
-          "requirements": "Erfordert einen Apple Silicon Mac mit macOS Tahoe (26.0) oder neuer. Apple Intelligence muss in den Systemeinstellungen aktiviert sein.",
           "unavailable": "Apple Intelligence ist auf diesem Gerät nicht verfügbar. Erfordert einen Apple Silicon Mac mit macOS Tahoe (26.0) oder neuer und aktiviertem Apple Intelligence in den Systemeinstellungen."
         },
         "baseUrl": {
@@ -350,10 +431,8 @@
         },
         "model": {
           "title": "Modell",
-          "descriptionApple": "Gib ein optionales numerisches Token-Limit an oder behalte die Standard-Gerätevorgabe.",
           "descriptionCustom": "Gib die Modellkennung an, die von deinem benutzerdefinierten Endpunkt erwartet wird.",
           "descriptionDefault": "Wähle ein Modell des ausgewählten Anbieters.",
-          "placeholderApple": "Apple Intelligence",
           "placeholderWithOptions": "Modell suchen oder auswählen",
           "placeholderNoOptions": "Modellnamen eingeben",
           "refreshModels": "Modelle aktualisieren"
@@ -379,6 +458,29 @@
         "cancel": "Abbrechen",
         "selectToEdit": "Wähle oben einen Prompt aus, um dessen Details anzuzeigen und zu bearbeiten.",
         "createFirst": "Klicke oben auf 'Neuen Prompt erstellen', um deinen ersten Nachbearbeitungs-Prompt zu erstellen."
+      },
+      "actions": {
+        "title": "Actions",
+        "description": "Bind Ctrl+number keys (1-9) to custom prompts. Press a shortcut during recording to apply the action after transcription.",
+        "noActions": "No actions configured yet.",
+        "createFirst": "Create your first action to process transcriptions with your configured provider.",
+        "addAction": "Add Action",
+        "editAction": "Edit Action",
+        "key": "Key",
+        "keyLabel": "Key (1-9)",
+        "name": "Name",
+        "namePlaceholder": "e.g. Email mode",
+        "prompt": "Prompt",
+        "promptPlaceholder": "e.g. Format this as a professional email with greeting and sign-off. Add line breaks between paragraphs.",
+        "promptTip": "Tip: Use <code>${output}</code> to insert the transcribed text in your prompt.",
+        "model": "Model (optional)",
+        "modelPlaceholder": "Select a model",
+        "modelTip": "Select a specific model for this action, or use the default from the API section.",
+        "defaultModel": "Default",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "maxActionsReached": "Maximum of 9 actions reached."
       }
     },
     "history": {
@@ -390,7 +492,29 @@
       "save": "Transkription speichern",
       "unsave": "Aus Gespeicherten entfernen",
       "delete": "Eintrag löschen",
-      "deleteError": "Eintrag konnte nicht gelöscht werden. Bitte versuche es erneut."
+      "deleteError": "Eintrag konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "reprocess": "Reprocess with different model",
+      "reprocessing": "Reprocessing...",
+      "selectModel": "Select model",
+      "originalTranscript": "Original",
+      "postProcessed": "Post-processed",
+      "action": "Action {{key}}",
+      "retranscribe": "Erneut transkribieren",
+      "retranscribeError": "Erneute Transkription fehlgeschlagen. Bitte versuche es erneut.",
+      "transcribing": "Transkribiere...",
+      "transcriptionFailed": "Transkription fehlgeschlagen. Du kannst über das Wiederholen-Symbol erneut transkribieren."
+    },
+    "gemini": {
+      "title": "Gemini API",
+      "description": "Use Google's Gemini API for cloud-based transcription. Requires an API key.",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "Enter your Gemini API key",
+      "model": "Model",
+      "modelDescription": "Select which Gemini model to use for transcription",
+      "apiKeyRequired": "API Key Required",
+      "apiKeyRequiredDescription": "Enter your Google Gemini API key to use cloud transcription.",
+      "save": "Save",
+      "cancel": "Cancel"
     },
     "debug": {
       "title": "Debug",
@@ -402,9 +526,27 @@
         "title": "Log-Level",
         "description": "Ausführlichkeit der Protokollierung festlegen"
       },
+      "liveLogs": {
+        "title": "Live-Logs",
+        "description": "Anwendungs-Logs in Echtzeit anzeigen, um Probleme zu diagnostizieren, ohne die Log-Datei zu öffnen. Es werden nur Logs angezeigt, die ausgegeben werden, während dieses Feld geöffnet ist; berücksichtigt die obige Log-Level-Einstellung.",
+        "live": "Live",
+        "paused": "Pausiert",
+        "pause": "Pausieren",
+        "resume": "Fortsetzen",
+        "copied": "Kopiert",
+        "lineCount": "{{count}} Zeilen",
+        "empty": "Warte auf Logs … Einträge erscheinen hier, sobald die App sie ausgibt."
+      },
       "updateChecks": {
         "label": "Nach Updates suchen",
         "description": "Automatisch nach neuen Versionen von Parler suchen"
+      },
+      "whatsNewPreview": {
+        "title": "Vorschau der Neuerungen",
+        "description": "Die neuesten gebündelten Versionshinweise öffnen, ohne sie als gesehen zu markieren",
+        "button": "Vorschau",
+        "noNotes": "Keine gebündelten Versionshinweise gefunden",
+        "error": "Versionshinweise konnten nicht angezeigt werden"
       },
       "soundTheme": {
         "label": "Sound-Thema",
@@ -450,9 +592,9 @@
         "description": "Leerzeichen nach eingefügter Transkription hinzufügen"
       },
       "keyboardImplementation": {
-        "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
-        "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
+        "title": "Tastatur-Implementierung",
+        "description": "Wähle das Backend für Tastaturkürzel.",
+        "bindingsReset": "Tastaturkürzel waren inkompatibel und wurden auf die Standardwerte zurückgesetzt"
       },
       "paths": {
         "appData": "App-Daten:",
@@ -460,8 +602,16 @@
         "settings": "Einstellungen:"
       },
       "pasteDelay": {
-        "title": "Einfügeverzögerung",
-        "description": "Verzögerung vor dem Senden des Einfüge-Tastendrucks (in Millisekunden). Erhöhen Sie den Wert, wenn falscher Text eingefügt wird."
+        "title": "Einfügeverzögerung (vorher)",
+        "description": "Verzögerung (in Millisekunden) nach dem Kopieren des Textes, bevor der Einfüge-Tastendruck gesendet wird. Erhöhe den Wert, wenn nichts eingefügt wird."
+      },
+      "pasteDelayAfter": {
+        "title": "Einfügeverzögerung (nachher)",
+        "description": "Verzögerung (in Millisekunden) nach dem Einfüge-Tastendruck, bevor deine vorherige Zwischenablage wiederhergestellt wird. Erhöhe den Wert, wenn der alte Inhalt der Zwischenablage statt der Transkription eingefügt wird."
+      },
+      "recordingBuffer": {
+        "title": "Zusätzlicher Aufnahmepuffer",
+        "description": "Zusätzliche Zeit (in Millisekunden), um nach dem Loslassen der Taste weiter aufzunehmen, um nachlaufendes Audio zu erfassen. 0 = kein zusätzlicher Puffer."
       }
     },
     "about": {
@@ -469,6 +619,10 @@
       "version": {
         "title": "Version",
         "description": "Aktuelle Version von Parler"
+      },
+      "whatsNewUpdates": {
+        "label": "Neuerungen anzeigen",
+        "description": "Versionshinweise nach Parler-Updates anzeigen"
       },
       "appDataDirectory": {
         "title": "App-Datenverzeichnis",
@@ -486,48 +640,37 @@
       },
       "acknowledgments": {
         "title": "Danksagungen",
-        "whisper": {
-          "title": "Whisper.cpp",
+        "ggml": {
+          "title": "ggml",
           "description": "Hochleistungs-Inferenz des Whisper-Spracherkennungsmodells von OpenAI",
-          "details": "Parler verwendet Whisper.cpp für schnelle, lokale Sprach-zu-Text-Verarbeitung. Dank an Georgi Gerganov und die Mitwirkenden für ihre großartige Arbeit."
+          "details": "Parler verwendet ggml für schnelle, lokale Sprach-zu-Text-Verarbeitung. Dank an Georgi Gerganov und die Mitwirkenden für ihre großartige Arbeit."
         }
       }
     }
   },
   "footer": {
-    "downloadingModel": "Lade {{model}} herunter...",
     "checkingUpdates": "Suche nach Updates...",
-    "updateAvailable": "Update verfügbar: {{version}}",
     "updateAvailableShort": "Update verfügbar",
     "upToDate": "Aktuell",
-    "downloadUpdate": "Update herunterladen",
-    "restart": "Neustart",
     "updateCheckingDisabled": "Update-Prüfung deaktiviert",
     "downloading": "Wird heruntergeladen... {{progress}}%",
     "installing": "Wird installiert...",
     "preparing": "Wird vorbereitet...",
-    "checkForUpdates": "Nach Updates suchen"
+    "checkForUpdates": "Nach Updates suchen",
+    "portableUpdateTitle": "Manuelles Update erforderlich",
+    "portableUpdateMessage": "Portable Installationen können nicht automatisch aktualisiert werden. Zum Aktualisieren: Lade den neuesten NSIS-Installer von GitHub Releases herunter, installiere ihn im selben Ordner und kopiere dann deinen Data/-Ordner (Einstellungen, Modelle, Aufnahmen) von der alten Version in die neue.",
+    "portableUpdateButton": "GitHub Releases öffnen"
+  },
+  "whatsNew": {
+    "title": "Neu in Parler v{{version}}"
   },
   "common": {
     "loading": "Wird geladen...",
-    "save": "Speichern",
-    "cancel": "Abbrechen",
-    "reset": "Zurücksetzen",
-    "add": "Hinzufügen",
-    "remove": "Entfernen",
     "delete": "Löschen",
-    "edit": "Bearbeiten",
-    "create": "Erstellen",
-    "update": "Aktualisieren",
     "close": "Schließen",
     "open": "Öffnen",
-    "default": "Standard",
-    "enabled": "Aktiviert",
-    "disabled": "Deaktiviert",
-    "on": "An",
-    "off": "Aus",
-    "yes": "Ja",
-    "no": "Nein",
+    "copy": "Kopieren",
+    "clear": "Leeren",
     "noOptionsFound": "Keine Optionen gefunden"
   },
   "accessibility": {
@@ -537,11 +680,35 @@
     "dismiss": "Schließen"
   },
   "errors": {
-    "loadDirectory": "Fehler beim Laden des Verzeichnisses: {{error}}"
+    "loadDirectory": "Fehler beim Laden des Verzeichnisses: {{error}}",
+    "micPermissionDeniedTitle": "Mikrofonzugriff verweigert",
+    "micPermissionDenied": {
+      "generic": "Der Mikrofonzugriff wurde vom Betriebssystem verweigert. Bitte erteile die Mikrofonberechtigung in deinen Systemeinstellungen.",
+      "windows": "Aktiviere den Mikrofonzugriff unter Einstellungen → Datenschutz und Sicherheit → Mikrofon (einschließlich Desktop-App-Zugriff).",
+      "macos": "Erteile den Mikrofonzugriff in Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon.",
+      "linux": "Erteile den Mikrofonzugriff in den Sound- oder Datenschutzeinstellungen deines Systems."
+    },
+    "noInputDeviceTitle": "Kein Mikrofon gefunden",
+    "noInputDevice": "Es wurde kein Audio-Eingabegerät erkannt. Bitte schließe ein Mikrofon oder Headset an und versuche es erneut.",
+    "recordingFailed": "Aufnahme konnte nicht gestartet werden: {{error}}",
+    "modelLoadFailed": "Modell konnte nicht geladen werden: {{model}}",
+    "modelLoadFailedUnknown": "unbekanntes Modell",
+    "pasteFailedTitle": "Text konnte nicht eingefügt werden",
+    "pasteFailed": "Der Text konnte nicht in die aktive Anwendung eingefügt werden.",
+    "transcriptionFailedTitle": "Transkription fehlgeschlagen"
   },
   "appLanguage": {
     "title": "Anwendungssprache",
     "description": "Sprache der Parler-Oberfläche ändern"
+  },
+  "theme": {
+    "title": "Anwendungsdesign",
+    "description": "Wählen Sie, ob Parler dem Systemthema folgt oder hell bzw. dunkel bleibt",
+    "options": {
+      "system": "System",
+      "light": "Hell",
+      "dark": "Dunkel"
+    }
   },
   "overlay": {
     "transcribing": "Transkribiere...",

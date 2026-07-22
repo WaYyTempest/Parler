@@ -4,6 +4,7 @@
     "checkUpdates": "Güncellemeleri Kontrol Et...",
     "copyLastTranscript": "Son transkripti kopyala",
     "unloadModel": "Modeli boşalt",
+    "model": "Model",
     "quit": "Çıkış",
     "cancel": "İptal"
   },
@@ -18,11 +19,12 @@
   },
   "onboarding": {
     "subtitle": "Başlamak için bir transkripsiyon modeli seçin",
+    "existingModelsTitle": "Compatible Models",
+    "downloadModelsTitle": "Available to Download",
+    "showAllModels": "Show all {{total}} models",
+    "showFewerModels": "Show fewer models",
     "recommended": "Önerilen",
-    "download": "İndir",
-    "downloading": "İndiriliyor...",
     "customModelDescription": "Resmi olarak desteklenmiyor",
-    "downloadFailed": "İndirme başarısız oldu. Lütfen tekrar deneyin.",
     "modelCard": {
       "accuracy": "doğruluk",
       "speed": "hız"
@@ -75,11 +77,30 @@
       "sense-voice-int8": {
         "name": "SenseVoice",
         "description": "Çok hızlı. Çince, İngilizce, Japonca, Korece, Kantonca."
+      },
+      "gigaam-v3-e2e-ctc": {
+        "name": "GigaAM v3",
+        "description": "Rusça konuşma tanıma. Hızlı ve doğru."
+      },
+      "canary-180m-flash": {
+        "name": "Canary 180M Flash",
+        "description": "Çok hızlı. İngilizce, Almanca, İspanyolca, Fransızca. Çeviri desteği."
+      },
+      "canary-1b-v2": {
+        "name": "Canary 1B v2",
+        "description": "Doğru çok dilli. 25 Avrupa dili. Çeviri desteği."
+      },
+      "cohere-int8": {
+        "name": "Cohere",
+        "description": "Büyük, daha yavaş, ancak çok doğru çok dilli bir model."
+      },
+      "gemini-api": {
+        "name": "Gemini API",
+        "description": "Cloud-based transcription via Google Gemini. Requires API key and internet."
       }
     },
     "errors": {
-      "loadModels": "Mevcut modeller yüklenemedi",
-      "downloadModel": "Model indirilemedi: {{error}}"
+      "selectModel": "Failed to select model"
     },
     "permissions": {
       "title": "İzinler Gerekli",
@@ -96,17 +117,20 @@
       "granted": "Verildi",
       "waiting": "Bekleniyor...",
       "allGranted": "Her şey hazır!",
-      "skip": "Simdilik atla",
       "errors": {
         "checkFailed": "İzinler kontrol edilemedi. Lütfen tekrar deneyin.",
         "requestFailed": "İzin isteği başarısız oldu. Lütfen tekrar deneyin."
-      }
+      },
+      "skip": "Simdilik atla"
     }
   },
   "modelSelector": {
     "custom": "Özel",
+    "streaming": "Akış",
     "active": "Aktif",
     "noModelsAvailable": "Kullanılabilir model yok",
+    "verifying": "{{modelName}} doğrulanıyor...",
+    "verifyingGeneric": "Doğrulanıyor...",
     "extracting": "{{modelName}} çıkarılıyor...",
     "extractingMultiple": "{{count}} model çıkarılıyor...",
     "extractingGeneric": "Çıkarılıyor...",
@@ -123,37 +147,59 @@
     "downloadSpeed": "{{speed}} MB/s",
     "capabilities": {
       "languageSelection": "Birden fazla giriş dilini destekler",
-      "multiLanguage": "Çok dilli",
+      "languageCount": "{{total}} languages",
       "translation": "İngilizce'ye çevirebilir",
       "translate": "İngilizce'ye çevir",
       "singleLanguage": "Yalnızca bu dili destekler",
-      "languageOnly": "Yalnızca {{language}}"
+      "languageOnly": "Yalnızca {{language}}",
+      "streaming": "Konuşurken canlı transkripsiyon gösterir"
     },
     "cancel": "İptal",
-    "cancelDownload": "İndirmeyi iptal et"
+    "cancelDownload": "İndirmeyi iptal et",
+    "legacy": "Eski"
   },
   "settings": {
     "modelSettings": {
-      "title": "{{model}} Ayarları",
-      "noSettingsNeeded": "Bu model yapılandırma gerektirmeden otomatik olarak çalışır."
+      "title": "{{model}} Ayarları"
     },
     "models": {
       "title": "Transkripsiyon Modelleri",
       "description": "Bir transkripsiyon modeli seçin veya ek modeller indirin. Farklı modeller değişen doğruluk ve hız seviyeleri sunar.",
-      "downloaded": "İndirildi",
-      "available": "İndirilebilir",
       "deleteConfirm": "{{modelName}} modelini silmek istediğinizden emin misiniz? Kullanmak için tekrar indirmeniz gerekecek.",
       "deleteActiveConfirm": "{{modelName}} aktif modelinizdir. Silmek, yeni bir model seçene kadar transkripsiyonları durduracaktır. Emin misiniz?",
       "deleteTitle": "Modeli Sil",
       "filters": {
-        "all": "Tümü",
-        "multiLanguage": "Çok dilli",
-        "translation": "Çeviri",
         "allLanguages": "Tüm Diller"
       },
       "noModelsMatch": "Bu filtreyle eşleşen model yok.",
       "yourModels": "İndirilen modeller",
-      "availableModels": "İndirilebilir"
+      "availableModels": "İndirilebilir",
+      "searchPlaceholder": "Modelleri ada göre ara…",
+      "rescan": {
+        "label": "Yeniden tara",
+        "tooltip": "Parler dışında modeller klasörüne veya Hugging Face önbelleğine eklenen modelleri yeniden tara"
+      },
+      "tabs": {
+        "transcription": "Transcription",
+        "processing": "Processing"
+      },
+      "downloaded": "İndirildi",
+      "available": "İndirilebilir",
+      "processingModels": {
+        "title": "Processing Models",
+        "description": "Save LLM models for use in post-processing actions.",
+        "noModels": "No processing models saved yet. Add one to use in your actions.",
+        "addModel": "Add Processing Model",
+        "provider": "Provider",
+        "apiKey": "API Key",
+        "apiKeyPlaceholder": "Enter API key",
+        "model": "Model",
+        "modelPlaceholder": "Select or type a model",
+        "save": "Save",
+        "cancel": "Cancel",
+        "fetchModels": "Fetch models",
+        "alreadySaved": "This model is already saved."
+      }
     },
     "general": {
       "title": "Genel",
@@ -187,7 +233,6 @@
       "language": {
         "title": "Dil",
         "description": "Konuşma tanıma dilini seçin. 'Otomatik' seçeneği dili kendisi belirler, ancak belirli bir dil seçmek o dildeki doğruluğu artırabilir.",
-        "descriptionUnsupported": "Parakeet modeli dili otomatik algılar. Manuel seçim gerekmez.",
         "searchPlaceholder": "Dil ara...",
         "noResults": "Dil bulunamadı",
         "auto": "Otomatik"
@@ -221,17 +266,34 @@
       }
     },
     "advanced": {
-      "title": "Gelişmiş",
       "groups": {
         "app": "Uygulama",
         "output": "Çıktı",
         "transcription": "Transkripsiyon",
         "history": "Geçmiş",
-        "experimental": "Deneysel"
+        "experimental": "Deneysel",
+        "cloudModels": "Cloud Models"
       },
       "experimentalToggle": {
         "label": "Deneysel Özellikler",
         "description": "Hala geliştirme aşamasında olan deneysel özellikleri etkinleştir."
+      },
+      "lazyStreamClose": {
+        "label": "Transkripsiyonlar arasında mikrofonu açık tut",
+        "description": "Kayıt durdurulduktan sonra mikrofon akışını 30 saniye açık tutar, ardışık transkripsiyonlarda gecikmeyi azaltır. Etkinken Bluetooth ses kalitesini düşürebilir."
+      },
+      "acceleration": {
+        "transcribe": {
+          "title": "Whisper Hızlandırma",
+          "description": "Whisper modelleri için donanım hızlandırma. Otomatik mod, mevcutsa GPU kullanır (macOS'ta Metal, Windows/Linux'ta Vulkan)."
+        },
+        "ort": {
+          "title": "ONNX Hızlandırma",
+          "description": "ONNX modelleri için donanım hızlandırma (Parakeet, Canary, Moonshine vb.). Windows'ta DirectML deneyseldir. Modeller transkripsiyon yapamayabilir."
+        },
+        "gpuDevice": {
+          "auto": "Otomatik"
+        }
       },
       "startHidden": {
         "label": "Gizli Başlat",
@@ -246,12 +308,22 @@
         "description": "Parler simgesini sistem tepsisinde göster."
       },
       "overlay": {
-        "title": "Overlay Konumu",
-        "description": "Kayıt ve transkripsiyon sırasında görsel geri bildirim kaplamasını gösterir. Linux'ta 'Yok' önerilir.",
-        "options": {
-          "none": "Yok",
-          "bottom": "Alt",
-          "top": "Üst"
+        "style": {
+          "title": "Overlay",
+          "description": "Choose the recording overlay: None hides it, Minimal shows a compact pill, Live shows transcription in real time as you speak (streaming-capable models only — look for the Streaming badge in the model picker). On Linux 'None' is recommended.",
+          "options": {
+            "none": "Yok",
+            "minimal": "Minimal",
+            "live": "Live"
+          }
+        },
+        "position": {
+          "title": "Overlay Konumu",
+          "description": "Kayıt ve transkripsiyon sırasında görsel geri bildirim kaplamasını gösterir. Linux'ta 'Yok' önerilir.",
+          "options": {
+            "bottom": "Alt",
+            "top": "Üst"
+          }
         }
       },
       "pasteMethod": {
@@ -295,8 +367,7 @@
       },
       "translateToEnglish": {
         "label": "İngilizceye Çevir",
-        "description": "Transkripsiyon sırasında diğer dillerden İngilizceye otomatik olarak çevirir.",
-        "descriptionUnsupported": "Çeviri {{model}} modeli tarafından desteklenmiyor."
+        "description": "Transkripsiyon sırasında diğer dillerden İngilizceye otomatik olarak çevirir."
       },
       "modelUnload": {
         "title": "Modeli Boşalt",
@@ -309,20 +380,23 @@
           "min10": "10 dakika sonra",
           "min15": "15 dakika sonra",
           "hour1": "1 saat sonra",
-          "sec5": "5 saniye sonra (Debug)"
+          "sec15": "15 saniye sonra (Debug)"
         }
       },
       "customWords": {
         "title": "Özel Kelimeler",
-        "description": "Transkripsiyon sırasında sıkça yanlış duyulan veya yanlış yazılan kelimeleri ekleyin. Sistem, benzer sesli kelimeleri listenize göre otomatik olarak düzeltir.",
+        "description": "Desteklenen modellerin adları ve özel terimleri tanımasına yardımcı olun. Bulanık düzeltme şu anda A–Z harflerini ve rakamları kullanan sözcüklerle sınırlıdır.",
         "placeholder": "Kelime ekle",
         "add": "Ekle",
         "remove": "{{word}} Kaldır",
         "duplicate": "\"{{word}}\" zaten mevcut"
+      },
+      "voiceActivityDetection": {
+        "title": "Voice Activity Detection",
+        "description": "Filter silence from recordings. Streaming-capable models use a longer VAD tail; disabling VAD records raw audio."
       }
     },
     "postProcessing": {
-      "title": "Son İşlem",
       "hotkey": {
         "title": "Kısayol Tuşu"
       },
@@ -333,9 +407,6 @@
           "description": "OpenAI uyumlu bir sağlayıcı seçin."
         },
         "appleIntelligence": {
-          "title": "Apple Intelligence",
-          "description": "Tamamen cihaz üzerinde çalışır. API anahtarı veya ağ erişimi gerekmez.",
-          "requirements": "macOS Tahoe (26.0) veya üzeri çalıştıran bir Apple Silicon Mac gerektirir. Sistem Ayarları'nda Apple Intelligence etkin olmalıdır.",
           "unavailable": "Apple Intelligence bu cihazda kullanılamıyor. macOS Tahoe (26.0) veya üzeri ve Sistem Ayarları'nda Apple Intelligence etkin olan bir Apple Silicon Mac gerektirir."
         },
         "baseUrl": {
@@ -350,10 +421,8 @@
         },
         "model": {
           "title": "Model",
-          "descriptionApple": "İsteğe bağlı bir sayısal token sınırı belirleyin veya varsayılan cihaz içi ön ayarı kullanın.",
           "descriptionCustom": "Özel uç noktanızın beklediği model tanımlayıcısını girin.",
           "descriptionDefault": "Seçili sağlayıcının sunduğu bir modeli seçin.",
-          "placeholderApple": "Apple Intelligence",
           "placeholderWithOptions": "Model ara veya seç",
           "placeholderNoOptions": "Model adı yazın",
           "refreshModels": "Modelleri Yenile"
@@ -379,6 +448,29 @@
         "cancel": "İptal",
         "selectToEdit": "Ayrıntılarını görüntülemek ve düzenlemek için yukarıdan bir prompt seçin.",
         "createFirst": "İlk son işlem prompt'unuzu oluşturmak için yukarıdaki “Yeni Prompt Oluştur” seçeneğine tıklayın."
+      },
+      "actions": {
+        "title": "Actions",
+        "description": "Bind Ctrl+number keys (1-9) to custom prompts. Press a shortcut during recording to apply the action after transcription.",
+        "noActions": "No actions configured yet.",
+        "createFirst": "Create your first action to process transcriptions with your configured provider.",
+        "addAction": "Add Action",
+        "editAction": "Edit Action",
+        "key": "Key",
+        "keyLabel": "Key (1-9)",
+        "name": "Name",
+        "namePlaceholder": "e.g. Email mode",
+        "prompt": "Prompt",
+        "promptPlaceholder": "e.g. Format this as a professional email with greeting and sign-off. Add line breaks between paragraphs.",
+        "promptTip": "Tip: Use <code>${output}</code> to insert the transcribed text in your prompt.",
+        "model": "Model (optional)",
+        "modelPlaceholder": "Select a model",
+        "modelTip": "Select a specific model for this action, or use the default from the API section.",
+        "defaultModel": "Default",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "maxActionsReached": "Maximum of 9 actions reached."
       }
     },
     "history": {
@@ -390,7 +482,17 @@
       "save": "Transkripsiyonu kaydet",
       "unsave": "Kaydedilenlerden kaldır",
       "delete": "Kaydı sil",
-      "deleteError": "Kayıt silinemedi. Lütfen tekrar deneyin."
+      "deleteError": "Kayıt silinemedi. Lütfen tekrar deneyin.",
+      "retranscribe": "Yeniden yazıya dök",
+      "retranscribeError": "Yeniden yazıya dökme başarısız oldu. Lütfen tekrar deneyin.",
+      "transcribing": "Yazıya döküyor...",
+      "transcriptionFailed": "Transkripsiyon başarısız oldu. Yeniden deneme simgesini kullanarak tekrar yazıya dökebilirsiniz.",
+      "reprocess": "Reprocess with different model",
+      "reprocessing": "Reprocessing...",
+      "selectModel": "Select model",
+      "originalTranscript": "Original",
+      "postProcessed": "Post-processed",
+      "action": "Action {{key}}"
     },
     "debug": {
       "title": "Hata Ayıklama",
@@ -401,6 +503,17 @@
       "logLevel": {
         "title": "Log Seviyesi",
         "description": "Loglamanın ayrıntı düzeyini ayarla"
+      },
+      "liveLogs": {
+        "title": "Canlı Loglar",
+        "description": "Sorunları log dosyasını açmadan teşhis etmek için uygulama loglarını gerçek zamanlı olarak akıtın. Yalnızca bu panel açıkken oluşturulan loglar gösterilir; yukarıdaki Log Seviyesi ayarına uyar.",
+        "live": "Canlı",
+        "paused": "Duraklatıldı",
+        "pause": "Duraklat",
+        "resume": "Sürdür",
+        "copied": "Kopyalandı",
+        "lineCount": "{{count}} satır",
+        "empty": "Loglar bekleniyor… Uygulama logları ürettikçe girişler burada görünür."
       },
       "updateChecks": {
         "label": "Güncellemeleri Kontrol Et",
@@ -450,9 +563,9 @@
         "description": "Yapıştırılan transkripsiyondan sonra boşluk ekler"
       },
       "keyboardImplementation": {
-        "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
-        "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
+        "title": "Klavye Uygulaması",
+        "description": "Klavye kısayolları için kullanılacak altyapıyı seçin.",
+        "bindingsReset": "Klavye kısayolları uyumsuzdu ve varsayılan ayarlara sıfırlandı"
       },
       "paths": {
         "appData": "Uygulama Verileri:",
@@ -460,8 +573,23 @@
         "settings": "Ayarlar:"
       },
       "pasteDelay": {
-        "title": "Yapıştırma gecikmesi",
-        "description": "Yapıştırma tuşu göndermeden önce gecikme (milisaniye cinsinden). Yanlış metin yapıştırılıyorsa artırın."
+        "title": "Yapıştırma gecikmesi (önce)",
+        "description": "Metin kopyalandıktan sonra, yapıştırma tuşu gönderilmeden önceki gecikme (milisaniye cinsinden). Hiçbir şey yapıştırılmıyorsa artırın."
+      },
+      "pasteDelayAfter": {
+        "title": "Yapıştırma gecikmesi (sonra)",
+        "description": "Yapıştırma tuşundan sonra, önceki panonuz geri yüklenmeden önceki gecikme (milisaniye cinsinden). Yazıya dökülen metin yerine eski pano içeriği yapıştırılıyorsa artırın."
+      },
+      "recordingBuffer": {
+        "title": "Ekstra kayıt tamponu",
+        "description": "Tuşu bıraktıktan sonra arka plandaki sesi yakalamak için kaydı sürdürme süresi (milisaniye). 0 = ekstra tampon yok."
+      },
+      "whatsNewPreview": {
+        "title": "Yenilikleri Önizle",
+        "description": "En son paketlenmiş sürüm notunu görüldü olarak işaretlemeden aç",
+        "button": "Önizle",
+        "noNotes": "Paketlenmiş sürüm notu bulunamadı",
+        "error": "Sürüm notları önizlenemedi"
       }
     },
     "about": {
@@ -486,65 +614,104 @@
       },
       "acknowledgments": {
         "title": "Teşekkürler",
-        "whisper": {
-          "title": "Whisper.cpp",
+        "ggml": {
+          "title": "ggml",
           "description": "OpenAI'nin Whisper otomatik konuşma tanıma modelinin yüksek performanslı çıkarımı",
-          "details": "Parler, hızlı ve yerel konuşmadan metne dönüştürme için Whisper.cpp kullanır. Georgi Gerganov ve katkıda bulunanların harika çalışmaları için teşekkür ederiz."
+          "details": "Parler, hızlı ve yerel konuşmadan metne dönüştürme için ggml kullanır. Georgi Gerganov ve katkıda bulunanların harika çalışmaları için teşekkür ederiz."
         }
+      },
+      "whatsNewUpdates": {
+        "label": "Yenilikleri Göster",
+        "description": "Parler güncellemelerinden sonra sürüm notlarını göster"
       }
+    },
+    "longAudioModel": {
+      "title": "Long Audio Model",
+      "description": "Automatically switch to a different model when recording duration exceeds the threshold.",
+      "modelLabel": "Model for long recordings",
+      "modelDescription": "Select a model to use for recordings longer than the threshold.",
+      "thresholdLabel": "Duration threshold (seconds)",
+      "thresholdDescription": "Switch to the long audio model when recording exceeds this duration.",
+      "disabled": "Disabled",
+      "seconds": "{{value}}s"
+    },
+    "gemini": {
+      "title": "Gemini API",
+      "description": "Use Google's Gemini API for cloud-based transcription. Requires an API key.",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "Enter your Gemini API key",
+      "model": "Model",
+      "modelDescription": "Select which Gemini model to use for transcription",
+      "apiKeyRequired": "API Key Required",
+      "apiKeyRequiredDescription": "Enter your Google Gemini API key to use cloud transcription.",
+      "save": "Save",
+      "cancel": "Cancel"
     }
   },
   "footer": {
-    "downloadingModel": "{{model}} indiriliyor...",
     "checkingUpdates": "Güncellemeler kontrol ediliyor...",
-    "updateAvailable": "Güncelleme mevcut: {{version}}",
     "updateAvailableShort": "Güncelleme mevcut",
     "upToDate": "Güncel",
-    "downloadUpdate": "Güncellemeyi İndir",
-    "restart": "Yeniden Başlat",
     "updateCheckingDisabled": "Güncelleme Kontrolü Devre Dışı",
     "downloading": "İndiriliyor... %{{progress}}",
     "installing": "Yükleniyor...",
     "preparing": "Hazırlanıyor...",
-    "checkForUpdates": "Güncellemeleri kontrol et"
+    "checkForUpdates": "Güncellemeleri kontrol et",
+    "portableUpdateTitle": "Manuel güncelleme gerekli",
+    "portableUpdateMessage": "Taşınabilir kurulumlar otomatik olarak güncellenemez. Güncellemek için: GitHub Releases’ten en son NSIS yükleyicisini indirin, aynı klasöre kurun ve ardından Data/ klasörünüzü (ayarlar, modeller, kayıtlar) eski sürümden yenisine kopyalayın.",
+    "portableUpdateButton": "GitHub Releases’i aç"
   },
   "common": {
     "loading": "Yükleniyor...",
-    "save": "Kaydet",
-    "cancel": "İptal",
-    "reset": "Sıfırla",
-    "add": "Ekle",
-    "remove": "Kaldır",
     "delete": "Sil",
-    "edit": "Düzenle",
-    "create": "Oluştur",
-    "update": "Güncelle",
     "close": "Kapat",
     "open": "Aç",
-    "default": "Varsayılan",
-    "enabled": "Etkin",
-    "disabled": "Devre Dışı",
-    "on": "Açık",
-    "off": "Kapalı",
-    "yes": "Evet",
-    "no": "Hayır",
+    "copy": "Kopyala",
+    "clear": "Temizle",
     "noOptionsFound": "Seçenek bulunamadı"
   },
   "accessibility": {
-    "permissionsRequired": "Erişilebilirlik İzinleri Gerekli",
     "permissionsDescription": "Parler, transkribe edilen metni yazabilmek için erişilebilirlik izinlerine ihtiyaç duyar.",
     "openSettings": "Sistem Ayarlarını Aç",
+    "permissionsRequired": "Erişilebilirlik İzinleri Gerekli",
     "dismiss": "Yoksay"
   },
   "errors": {
-    "loadDirectory": "Dizin yüklenirken hata oluştu: {{error}}"
+    "loadDirectory": "Dizin yüklenirken hata oluştu: {{error}}",
+    "micPermissionDeniedTitle": "Mikrofon erişimi reddedildi",
+    "micPermissionDenied": {
+      "generic": "Mikrofon erişimi işletim sistemi tarafından reddedildi. Lütfen sistem ayarlarından mikrofon iznini verin.",
+      "windows": "Ayarlar → Gizlilik ve güvenlik → Mikrofon (masaüstü uygulama erişimi dahil) bölümünden mikrofon erişimini etkinleştirin.",
+      "macos": "Sistem Ayarları → Gizlilik ve Güvenlik → Mikrofon bölümünden mikrofon erişimini verin.",
+      "linux": "Sisteminizin ses veya gizlilik ayarlarından mikrofon erişimini verin."
+    },
+    "noInputDeviceTitle": "Mikrofon bulunamadı",
+    "noInputDevice": "Ses giriş aygıtı algılanamadı. Lütfen bir mikrofon veya kulaklık bağlayın ve tekrar deneyin.",
+    "recordingFailed": "Kayıt başlatılamadı: {{error}}",
+    "modelLoadFailed": "Model yüklenemedi: {{model}}",
+    "modelLoadFailedUnknown": "bilinmeyen model",
+    "pasteFailedTitle": "Metin yapıştırılamadı",
+    "pasteFailed": "Metin etkin uygulamaya yapıştırılamadı.",
+    "transcriptionFailedTitle": "Transkripsiyon başarısız oldu"
   },
   "appLanguage": {
     "title": "Uygulama Dili",
     "description": "Parler arayüzünün dilini değiştirin"
   },
+  "theme": {
+    "title": "Uygulama teması",
+    "description": "Parler'in sistem temasını izlemesini ya da açık veya koyu kalmasını seçin",
+    "options": {
+      "system": "Sistem",
+      "light": "Açık",
+      "dark": "Koyu"
+    }
+  },
   "overlay": {
     "transcribing": "Transkribe ediliyor...",
     "processing": "İşleniyor..."
+  },
+  "whatsNew": {
+    "title": "Parler v{{version}} yenilikleri"
   }
 }
